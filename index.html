@@ -2,178 +2,79 @@
 <html lang="sv">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Daglig Kontroll – Höghöjdsbana</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Daglig Kontroll</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background-color: #f4f4f4;
-      margin: 0;
-      padding: 2rem;
+      font-family: sans-serif;
+      background-color: #f7f7f7;
+      margin: 2rem;
     }
-
     h1 {
       text-align: center;
-      margin-bottom: 2rem;
     }
-
     form {
       max-width: 800px;
       margin: auto;
-      background: white;
+      background-color: #fff;
       padding: 2rem;
       border-radius: 10px;
-      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
     }
-
-    .section {
-      margin-bottom: 1.5rem;
-      padding-bottom: 1rem;
-      border-bottom: 1px solid #ddd;
+    .row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.8rem;
+      flex-wrap: wrap;
     }
-
-    .section:last-child {
-      border-bottom: none;
-    }
-
-    label {
+    .label {
+      flex: 1;
       font-weight: bold;
-      display: block;
-      margin-bottom: 0.5rem;
     }
-
     .options {
+      flex: 2;
       display: flex;
       gap: 1rem;
-      margin-bottom: 0.5rem;
+      align-items: center;
+      flex-wrap: wrap;
     }
-
-    .comment {
-      display: none;
+    label input[type="radio"] {
+      margin-right: 0.3rem;
     }
-
     textarea {
       width: 100%;
+      margin-top: 0.3rem;
       padding: 0.5rem;
-      font-size: 1rem;
-      border-radius: 5px;
-      border: 1px solid #ccc;
-      resize: vertical;
-    }
-
-    button {
-      display: block;
-      margin: 2rem auto 0;
-      padding: 1rem 2rem;
-      background-color: #28a745;
-      color: white;
-      border: none;
-      border-radius: 10px;
-      font-size: 1.1rem;
-      cursor: pointer;
-    }
-
-    button:hover {
-      background-color: #218838;
     }
   </style>
 </head>
 <body>
-
-  <h1>Daglig Kontroll – Höghöjdsbana</h1>
-  <form id="dailyCheckForm">
-    <!-- Loop for each course -->
-    <div class="section" data-course="Gul 1">
-      <label>Gul 1</label>
+  <h1>Daglig Kontroll – Höghöjdsbanor</h1>
+  <form>
+    <!-- Exempel: Gul 1 -->
+    <div class="row">
+      <div class="label">Gul 1</div>
       <div class="options">
-        <label><input type="radio" name="Gul 1" value="Fullt godkänd" checked> Fullt godkänd</label>
-        <label><input type="radio" name="Gul 1" value="Anmärkning"> Anmärkning</label>
-        <label><input type="radio" name="Gul 1" value="Avstängd"> Avstängd</label>
-      </div>
-      <div class="comment">
-        <textarea name="Kommentar Gul 1" placeholder="Kommentar om något är fel..."></textarea>
+        <label><input type="radio" name="gul1" value="godkänd" checked> Fullt godkänd</label>
+        <label><input type="radio" name="gul1" value="anmärkning"> Anmärkning</label>
+        <label><input type="radio" name="gul1" value="avstängd"> Avstängd</label>
       </div>
     </div>
+    <textarea name="kommentar_gul1" placeholder="Kommentar om något är fel..."></textarea>
 
-    <div class="section" data-course="Gul 2">
-      <label>Gul 2</label>
+    <!-- Gul 2 -->
+    <div class="row">
+      <div class="label">Gul 2</div>
       <div class="options">
-        <label><input type="radio" name="Gul 2" value="Fullt godkänd" checked> Fullt godkänd</label>
-        <label><input type="radio" name="Gul 2" value="Anmärkning"> Anmärkning</label>
-        <label><input type="radio" name="Gul 2" value="Avstängd"> Avstängd</label>
-      </div>
-      <div class="comment">
-        <textarea name="Kommentar Gul 2" placeholder="Kommentar om något är fel..."></textarea>
+        <label><input type="radio" name="gul2" value="godkänd" checked> Fullt godkänd</label>
+        <label><input type="radio" name="gul2" value="anmärkning"> Anmärkning</label>
+        <label><input type="radio" name="gul2" value="avstängd"> Avstängd</label>
       </div>
     </div>
+    <textarea name="kommentar_gul2" placeholder="Kommentar om något är fel..."></textarea>
 
-    <div class="section" data-course="Grön 1">
-      <label>Grön 1</label>
-      <div class="options">
-        <label><input type="radio" name="Grön 1" value="Fullt godkänd" checked> Fullt godkänd</label>
-        <label><input type="radio" name="Grön 1" value="Anmärkning"> Anmärkning</label>
-        <label><input type="radio" name="Grön 1" value="Avstängd"> Avstängd</label>
-      </div>
-      <div class="comment">
-        <textarea name="Kommentar Grön 1" placeholder="Kommentar om något är fel..."></textarea>
-      </div>
-    </div>
-
-    <div class="section" data-course="Blå 1">
-      <label>Blå 1</label>
-      <div class="options">
-        <label><input type="radio" name="Blå 1" value="Fullt godkänd" checked> Fullt godkänd</label>
-        <label><input type="radio" name="Blå 1" value="Anmärkning"> Anmärkning</label>
-        <label><input type="radio" name="Blå 1" value="Avstängd"> Avstängd</label>
-      </div>
-      <div class="comment">
-        <textarea name="Kommentar Blå 1" placeholder="Kommentar om något är fel..."></textarea>
-      </div>
-    </div>
-
-    <div class="section" data-course="Röd 1">
-      <label>Röd 1</label>
-      <div class="options">
-        <label><input type="radio" name="Röd 1" value="Fullt godkänd" checked> Fullt godkänd</label>
-        <label><input type="radio" name="Röd 1" value="Anmärkning"> Anmärkning</label>
-        <label><input type="radio" name="Röd 1" value="Avstängd"> Avstängd</label>
-      </div>
-      <div class="comment">
-        <textarea name="Kommentar Röd 1" placeholder="Kommentar om något är fel..."></textarea>
-      </div>
-    </div>
-
-    <div class="section" data-course="Svart 1">
-      <label>Svart 1</label>
-      <div class="options">
-        <label><input type="radio" name="Svart 1" value="Fullt godkänd" checked> Fullt godkänd</label>
-        <label><input type="radio" name="Svart 1" value="Anmärkning"> Anmärkning</label>
-        <label><input type="radio" name="Svart 1" value="Avstängd"> Avstängd</label>
-      </div>
-      <div class="comment">
-        <textarea name="Kommentar Svart 1" placeholder="Kommentar om något är fel..."></textarea>
-      </div>
-    </div>
-
-    <button type="submit">Skicka in</button>
+    <!-- Lägg till fler banor här... -->
   </form>
-
-  <script>
-    // Visa/hide kommentarsfält beroende på val
-    document.querySelectorAll('.section').forEach(section => {
-      const radios = section.querySelectorAll('input[type="radio"]');
-      const commentBox = section.querySelector('.comment');
-
-      radios.forEach(radio => {
-        radio.addEventListener('change', () => {
-          if (radio.value !== 'Fullt godkänd') {
-            commentBox.style.display = 'block';
-          } else {
-            commentBox.style.display = 'none';
-          }
-        });
-      });
-    });
-  </script>
 </body>
 </html>
