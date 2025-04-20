@@ -42,9 +42,13 @@
     label input[type="radio"] {
       margin-right: 0.3rem;
     }
+    .comment {
+      display: none;
+      width: 100%;
+      margin-bottom: 1.2rem;
+    }
     textarea {
       width: 100%;
-      margin-top: 0.3rem;
       padding: 0.5rem;
     }
   </style>
@@ -52,29 +56,63 @@
 <body>
   <h1>Daglig Kontroll – Höghöjdsbanor</h1>
   <form>
-    <!-- Exempel: Gul 1 -->
+
+    <!-- Gul 1 -->
     <div class="row">
       <div class="label">Gul 1</div>
       <div class="options">
-        <label><input type="radio" name="gul1" value="godkänd" checked> Fullt godkänd</label>
-        <label><input type="radio" name="gul1" value="anmärkning"> Anmärkning</label>
-        <label><input type="radio" name="gul1" value="avstängd"> Avstängd</label>
+        <label><input type="radio" name="gul1" value="godkänd" checked onchange="toggleComment('gul1')"> Fullt godkänd</label>
+        <label><input type="radio" name="gul1" value="anmärkning" onchange="toggleComment('gul1')"> Anmärkning</label>
+        <label><input type="radio" name="gul1" value="avstängd" onchange="toggleComment('gul1')"> Avstängd</label>
       </div>
     </div>
-    <textarea name="kommentar_gul1" placeholder="Kommentar om något är fel..."></textarea>
+    <div class="comment" id="comment-gul1">
+      <textarea name="kommentar_gul1" placeholder="Kommentar om något är fel..."></textarea>
+    </div>
 
     <!-- Gul 2 -->
     <div class="row">
       <div class="label">Gul 2</div>
       <div class="options">
-        <label><input type="radio" name="gul2" value="godkänd" checked> Fullt godkänd</label>
-        <label><input type="radio" name="gul2" value="anmärkning"> Anmärkning</label>
-        <label><input type="radio" name="gul2" value="avstängd"> Avstängd</label>
+        <label><input type="radio" name="gul2" value="godkänd" checked onchange="toggleComment('gul2')"> Fullt godkänd</label>
+        <label><input type="radio" name="gul2" value="anmärkning" onchange="toggleComment('gul2')"> Anmärkning</label>
+        <label><input type="radio" name="gul2" value="avstängd" onchange="toggleComment('gul2')"> Avstängd</label>
       </div>
     </div>
-    <textarea name="kommentar_gul2" placeholder="Kommentar om något är fel..."></textarea>
+    <div class="comment" id="comment-gul2">
+      <textarea name="kommentar_gul2" placeholder="Kommentar om något är fel..."></textarea>
+    </div>
 
-    <!-- Lägg till fler banor här... -->
+    <!-- Grön 1 -->
+    <div class="row">
+      <div class="label">Grön 1</div>
+      <div class="options">
+        <label><input type="radio" name="gron1" value="godkänd" checked onchange="toggleComment('gron1')"> Fullt godkänd</label>
+        <label><input type="radio" name="gron1" value="anmärkning" onchange="toggleComment('gron1')"> Anmärkning</label>
+        <label><input type="radio" name="gron1" value="avstängd" onchange="toggleComment('gron1')"> Avstängd</label>
+      </div>
+    </div>
+    <div class="comment" id="comment-gron1">
+      <textarea name="kommentar_gron1" placeholder="Kommentar om något är fel..."></textarea>
+    </div>
+
+    <!-- Här lägger vi in fler banor sen -->
+
   </form>
+
+  <script>
+    function toggleComment(bana) {
+      const radios = document.getElementsByName(bana);
+      const kommentarDiv = document.getElementById('comment-' + bana);
+
+      for (const radio of radios) {
+        if ((radio.checked) && (radio.value === 'anmärkning' || radio.value === 'avstängd')) {
+          kommentarDiv.style.display = 'block';
+          return;
+        }
+      }
+      kommentarDiv.style.display = 'none';
+    }
+  </script>
 </body>
 </html>
