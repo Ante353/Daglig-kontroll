@@ -56,57 +56,53 @@
 <body>
   <h1>Daglig Kontroll – Höghöjdsbanor</h1>
   <form>
-
-    <!-- Gul 1 -->
-    <div class="row">
-      <div class="label">Gul 1</div>
-      <div class="options">
-        <label><input type="radio" name="gul1" value="godkänd" checked onchange="toggleComment('gul1')"> Fullt godkänd</label>
-        <label><input type="radio" name="gul1" value="anmärkning" onchange="toggleComment('gul1')"> Anmärkning</label>
-        <label><input type="radio" name="gul1" value="avstängd" onchange="toggleComment('gul1')"> Avstängd</label>
-      </div>
-    </div>
-    <div class="comment" id="comment-gul1">
-      <textarea name="kommentar_gul1" placeholder="Kommentar om något är fel..."></textarea>
-    </div>
-
-    <!-- Gul 2 -->
-    <div class="row">
-      <div class="label">Gul 2</div>
-      <div class="options">
-        <label><input type="radio" name="gul2" value="godkänd" checked onchange="toggleComment('gul2')"> Fullt godkänd</label>
-        <label><input type="radio" name="gul2" value="anmärkning" onchange="toggleComment('gul2')"> Anmärkning</label>
-        <label><input type="radio" name="gul2" value="avstängd" onchange="toggleComment('gul2')"> Avstängd</label>
-      </div>
-    </div>
-    <div class="comment" id="comment-gul2">
-      <textarea name="kommentar_gul2" placeholder="Kommentar om något är fel..."></textarea>
-    </div>
-
-    <!-- Grön 1 -->
-    <div class="row">
-      <div class="label">Grön 1</div>
-      <div class="options">
-        <label><input type="radio" name="gron1" value="godkänd" checked onchange="toggleComment('gron1')"> Fullt godkänd</label>
-        <label><input type="radio" name="gron1" value="anmärkning" onchange="toggleComment('gron1')"> Anmärkning</label>
-        <label><input type="radio" name="gron1" value="avstängd" onchange="toggleComment('gron1')"> Avstängd</label>
-      </div>
-    </div>
-    <div class="comment" id="comment-gron1">
-      <textarea name="kommentar_gron1" placeholder="Kommentar om något är fel..."></textarea>
-    </div>
-
-    <!-- Här lägger vi in fler banor sen -->
-
+    <!-- Här börjar banorna -->
+    <!-- Vi gör detta med JavaScript så vi slipper repetera koden 22 gånger -->
   </form>
-
+  
   <script>
-    function toggleComment(bana) {
-      const radios = document.getElementsByName(bana);
-      const kommentarDiv = document.getElementById('comment-' + bana);
+    const banor = [
+      "Gul 1", "Gul 2", "Gul 3", "Gul 4", "Gul 5", "Gul 6", "Gul Linbana",
+      "Grön 1", "Grön 2", "Grön 3", "Grön 4", "Grön 5",
+      "Blå 1", "Blå 2", "Blå 3", "Blå 4", "Blå Linbana",
+      "Röd 1", "Röd 2", "Röd 3", "Röd 4",
+      "Svart 1", "Svart 13", "Svart 99", "Långa Linbanan"
+    ];
 
+    const form = document.querySelector("form");
+
+    banor.forEach((bana, index) => {
+      const id = "bana" + index;
+      const name = id;
+      const safeId = id.replace(/\s+/g, '').toLowerCase();
+
+      const row = document.createElement("div");
+      row.className = "row";
+      row.innerHTML = `
+        <div class="label">${bana}</div>
+        <div class="options">
+          <label><input type="radio" name="${name}" value="godkänd" checked onchange="toggleComment('${safeId}')"> Fullt godkänd</label>
+          <label><input type="radio" name="${name}" value="anmärkning" onchange="toggleComment('${safeId}')"> Anmärkning</label>
+          <label><input type="radio" name="${name}" value="avstängd" onchange="toggleComment('${safeId}')"> Avstängd</label>
+        </div>
+      `;
+
+      const commentDiv = document.createElement("div");
+      commentDiv.className = "comment";
+      commentDiv.id = `comment-${safeId}`;
+      commentDiv.innerHTML = `
+        <textarea name="kommentar_${safeId}" placeholder="Kommentar om något är fel..."></textarea>
+      `;
+
+      form.appendChild(row);
+      form.appendChild(commentDiv);
+    });
+
+    function toggleComment(id) {
+      const radios = document.getElementsByName(id);
+      const kommentarDiv = document.getElementById('comment-' + id);
       for (const radio of radios) {
-        if ((radio.checked) && (radio.value === 'anmärkning' || radio.value === 'avstängd')) {
+        if (radio.checked && (radio.value === 'anmärkning' || radio.value === 'avstängd')) {
           kommentarDiv.style.display = 'block';
           return;
         }
