@@ -273,9 +273,17 @@
       datumRuta.style.fontWeight = "bold";
       datumRuta.innerText = `Senaste rapport: ${senasteDatum}`;
 
-      // Placera den ovanför "Gula Banor"-sektionen
-      const gulaSektion = document.querySelector(".section-header");
-      gulaSektion.parentElement.insertBefore(datumRuta, gulaSektion);
+      // Skapa ruta med endast datum
+const datumRuta = document.createElement("div");
+datumRuta.style.textAlign = "right";
+datumRuta.style.margin = "0 0 0.5rem 0";
+datumRuta.style.fontWeight = "bold";
+datumRuta.innerText = `Senaste rapport: ${senasteDatum}`;
+
+// Placera den före gula sektionen – utanför ramen
+const gulaSektionWrapper = document.querySelector(".section");
+gulaSektionWrapper.parentElement.insertBefore(datumRuta, gulaSektionWrapper);
+
 
       // Visa under varje bana (fortfarande bara Gul 1 och Grön 3)
       const senastePerBana = {};
