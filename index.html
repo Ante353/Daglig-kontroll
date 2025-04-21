@@ -33,10 +33,12 @@
       cursor: pointer;
       user-select: none;
     }
-    .section-header span {
-      font-weight: normal;
-      font-size: 0.95em;
-      color: #333;
+    .rubrik-status {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.9em;
+      margin-top: 0.3rem;
+      gap: 1rem;
     }
     .section-content {
       display: none;
@@ -78,29 +80,63 @@
   <h1>Daglig Kontroll – Höghöjdsbanor</h1>
   <form>
 
-    <!-- Sektioner för varje färg -->
+    <!-- Gula banor -->
     <div class="section">
-      <div class="section-header" onclick="toggleSection(this)">Gula Banor <span id="summary-gula_banor"></span></div>
+      <div class="section-header" onclick="toggleSection(this)">
+        Gula Banor
+        <div class="rubrik-status">
+          <span id="live-gula_banor">🖊️ Nuvarande val: ...</span>
+          <span id="senaste-gula_banor">💾 Senaste rapport: ...</span>
+        </div>
+      </div>
       <div class="section-content" id="content-gula_banor"></div>
     </div>
 
+    <!-- Gröna banor -->
     <div class="section">
-      <div class="section-header" onclick="toggleSection(this)">Gröna Banor <span id="summary-grona_banor"></span></div>
+      <div class="section-header" onclick="toggleSection(this)">
+        Gröna Banor
+        <div class="rubrik-status">
+          <span id="live-grona_banor">🖊️ Nuvarande val: ...</span>
+          <span id="senaste-grona_banor">💾 Senaste rapport: ...</span>
+        </div>
+      </div>
       <div class="section-content" id="content-grona_banor"></div>
     </div>
 
+    <!-- Blåa banor -->
     <div class="section">
-      <div class="section-header" onclick="toggleSection(this)">Blåa Banor <span id="summary-blaa_banor"></span></div>
+      <div class="section-header" onclick="toggleSection(this)">
+        Blåa Banor
+        <div class="rubrik-status">
+          <span id="live-blaa_banor">🖊️ Nuvarande val: ...</span>
+          <span id="senaste-blaa_banor">💾 Senaste rapport: ...</span>
+        </div>
+      </div>
       <div class="section-content" id="content-blaa_banor"></div>
     </div>
 
+    <!-- Röda banor -->
     <div class="section">
-      <div class="section-header" onclick="toggleSection(this)">Röda Banor <span id="summary-roda_banor"></span></div>
+      <div class="section-header" onclick="toggleSection(this)">
+        Röda Banor
+        <div class="rubrik-status">
+          <span id="live-roda_banor">🖊️ Nuvarande val: ...</span>
+          <span id="senaste-roda_banor">💾 Senaste rapport: ...</span>
+        </div>
+      </div>
       <div class="section-content" id="content-roda_banor"></div>
     </div>
 
+    <!-- Svarta banor -->
     <div class="section">
-      <div class="section-header" onclick="toggleSection(this)">Svarta Banor <span id="summary-svarta_banor"></span></div>
+      <div class="section-header" onclick="toggleSection(this)">
+        Svarta Banor
+        <div class="rubrik-status">
+          <span id="live-svarta_banor">🖊️ Nuvarande val: ...</span>
+          <span id="senaste-svarta_banor">💾 Senaste rapport: ...</span>
+        </div>
+      </div>
       <div class="section-content" id="content-svarta_banor"></div>
     </div>
 
@@ -117,13 +153,14 @@
     <div class="comment" id="comment-langa_linbanan">
       <textarea name="kommentar_langa_linbanan" placeholder="Kommentar om något är fel..."></textarea>
     </div>
-    
+
     <button type="submit" style="margin-top: 2rem; padding: 1rem; font-size: 1rem;">Skicka in</button>
     <p id="statusmeddelande" style="margin-top: 1rem; font-weight: bold;"></p>
-
   </form>
 
   <script>
+    const SHEETDB_API = "https://sheetdb.io/api/v1/0m6qr0irhuaa0";
+
     const grupper = {
       "gula_banor": ["Gul 1", "Gul 2", "Gul 3", "Gul 4", "Gul 5", "Gul 6", "Gul Linbana"],
       "grona_banor": ["Grön 1", "Grön 2", "Grön 3", "Grön 4", "Grön 5"],
@@ -171,8 +208,9 @@
         });
       });
 
-      const summary = `– ${godkand} godkända, ${anmarkning} anmärkning, ${avstangd} avstängd`;
-      document.getElementById("summary-" + groupId).innerText = summary;
+      const summary = `${godkand}/${group.length} godkända, ${anmarkning} anmärkning, ${avstangd} avstängd`;
+      const el = document.getElementById("live-" + groupId);
+      if (el) el.innerText = `🖊️ Nuvarande val: ${summary}`;
     }
 
     function skapaBanaHTML(namn, groupId) {
@@ -192,7 +230,6 @@
       `;
     }
 
-    // Generera formulärinnehåll automatiskt
     document.addEventListener("DOMContentLoaded", () => {
       for (const [groupId, lista] of Object.entries(grupper)) {
         const container = document.getElementById("content-" + groupId);
@@ -201,134 +238,116 @@
         });
         updateSummary(groupId);
       }
+      visaSenasteStatus();
+    });
+
+    async function visaSenasteStatus() {
+      try {
+        const res = await fetch(SHEETDB_API);
+        const data = await res.json();
+        const sorterat = data.sort((a, b) => new Date(b.datum) - new Date(a.datum));
+        const senasteDatum = sorterat[0]?.datum?.split(",")[0] ?? "–";
+
+        const datumRuta = document.createElement("div");
+        datumRuta.style.textAlign = "right";
+        datumRuta.style.margin = "0 0 0.5rem 0";
+        datumRuta.style.fontWeight = "bold";
+        datumRuta.innerText = `Senaste rapport: ${senasteDatum}`;
+        const gulaSektion = document.querySelector(".section");
+        gulaSektion.parentElement.insertBefore(datumRuta, gulaSektion);
+
+        const senastePerBana = {};
+        for (const rad of sorterat) {
+          const banaId = rad.bana.toLowerCase().replace(/\s+/g, "_");
+          if (!senastePerBana[banaId]) {
+            senastePerBana[banaId] = rad.status;
+          }
+        }
+
+        for (const [gruppId, lista] of Object.entries(grupper)) {
+          let godkand = 0, anmarkning = 0, avstangd = 0;
+          lista.forEach(namn => {
+            const id = toId(namn);
+            const status = senastePerBana[id];
+            if (status === "godkänd" || status === "Fullt godkänd") godkand++;
+            else if (status === "anmärkning" || status === "Anmärkning") anmarkning++;
+            else if (status === "avstängd" || status === "Avstängd") avstangd++;
+          });
+
+          const summary = `${godkand}/${lista.length} godkända, ${anmarkning} anmärkning, ${avstangd} avstängd`;
+          const el = document.getElementById("senaste-" + gruppId);
+          if (el) el.innerText = `💾 Senaste rapport: ${summary}`;
+        }
+
+        for (const [banaId, status] of Object.entries(senastePerBana)) {
+          const container = document.querySelector(`[name='${banaId}']`)?.closest(".options");
+          if (container) {
+            const statusDiv = document.createElement("div");
+            statusDiv.className = "senaste-status";
+            statusDiv.style.fontSize = "0.9em";
+            statusDiv.style.color = "#555";
+            statusDiv.style.marginTop = "0.3rem";
+            statusDiv.innerText = `Senast inskickat: ${status}`;
+            container.parentElement.appendChild(statusDiv);
+          }
+        }
+
+      } catch (err) {
+        console.error("Kunde inte hämta senaste status:", err);
+      }
+    }
+
+    const formElement = document.querySelector("form");
+    const statusText = document.getElementById("statusmeddelande");
+
+    formElement.addEventListener("submit", function(e) {
+      e.preventDefault();
+
+      const formData = new FormData(formElement);
+      const grupperadeData = {};
+
+      for (let [key, value] of formData.entries()) {
+        if (key.startsWith("kommentar_")) continue;
+
+        const kommentarKey = "kommentar_" + key;
+        const kommentar = formData.get(kommentarKey) || "";
+
+        grupperadeData[key] = {
+          status: value,
+          comment: kommentar
+        };
+      }
+
+      fetch(SHEETDB_API, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          data: Object.entries(grupperadeData).map(([bana, info]) => ({
+            datum: new Date().toLocaleString(),
+            bana: bana,
+            status: info.status,
+            kommentar: info.comment
+          }))
+        })
+      })
+      .then(res => res.json())
+      .then(() => {
+        statusText.innerText = "Formuläret har skickats!";
+        formElement.reset();
+        document.querySelectorAll(".comment").forEach(el => el.style.display = "none");
+        // Uppdatera summeringar igen efter inskickning
+        for (const groupId in grupper) {
+          updateSummary(groupId);
+        }
+        visaSenasteStatus();
+      })
+      .catch(err => {
+        console.error("Fel vid skickning:", err);
+        statusText.innerText = "Något gick fel, försök igen.";
+      });
     });
   </script>
-  
-  <script>
-  const formElement = document.querySelector("form");
-  const statusText = document.getElementById("statusmeddelande");
-
-  formElement.addEventListener("submit", function(e) {
-    e.preventDefault(); // Stoppa vanlig formulärskickning
-
-    const formData = new FormData(formElement);
-    const grupperadeData = {};
-
-    for (let [key, value] of formData.entries()) {
-      if (key.startsWith("kommentar_")) continue;
-
-      const kommentarKey = "kommentar_" + key;
-      const kommentar = formData.get(kommentarKey) || "";
-
-      grupperadeData[key] = {
-        status: value,
-        comment: kommentar
-      };
-    }
-
-    // Skicka data till SheetDB
-    fetch("https://sheetdb.io/api/v1/0m6qr0irhuaa0", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        data: Object.entries(grupperadeData).map(([bana, info]) => ({
-          datum: new Date().toLocaleString(),
-          bana: bana,
-          status: info.status,
-          kommentar: info.comment
-        }))
-      })
-    })
-    .then(res => res.json())
-    .then(() => {
-      statusText.innerText = "Formuläret har skickats!";
-      formElement.reset();
-      document.querySelectorAll(".comment").forEach(el => el.style.display = "none");
-    })
-    .catch(err => {
-      console.error("Fel vid skickning:", err);
-      statusText.innerText = "Något gick fel, försök igen.";
-    });
-  });
-</script>
-
-<script>
-  const SHEETDB_API = "https://sheetdb.io/api/v1/0m6qr0irhuaa0";
-
-
-  async function visaSenasteStatus() {
-    try {
-      const res = await fetch(SHEETDB_API);
-      const data = await res.json();
-
-      const sorterat = data.sort((a, b) => new Date(b.datum) - new Date(a.datum));
-      const senasteDatum = sorterat[0]?.datum?.split(",")[0] ?? "–";
-
-      // 🔼 Skapa datumruta
-      const datumRuta = document.createElement("div");
-      datumRuta.style.textAlign = "right";
-      datumRuta.style.margin = "0 0 0.5rem 0";
-      datumRuta.style.fontWeight = "bold";
-      datumRuta.innerText = `Senaste rapport: ${senasteDatum}`;
-
-      // ➕ Placera överst före Gula Banor
-      const gulaSektion = document.querySelector(".section");
-      gulaSektion.parentElement.insertBefore(datumRuta, gulaSektion);
-
-      // 🔍 Plocka ut senaste status per bana
-      const senastePerBana = {};
-      for (const rad of sorterat) {
-        const banaId = rad.bana.toLowerCase().replace(/\s+/g, "_");
-        if (!senastePerBana[banaId]) {
-          senastePerBana[banaId] = rad.status;
-        }
-      }
-
-      // 🧮 Räkna status per grupp
-      for (const [gruppId, banor] of Object.entries(grupper)) {
-        let godkand = 0, anmarkning = 0, avstangd = 0;
-
-        banor.forEach(bana => {
-          const status = senastePerBana[bana];
-          if (status === "godkänd" || status === "Fullt godkänd") godkand++;
-          else if (status === "anmärkning" || status === "Anmärkning") anmarkning++;
-          else if (status === "avstängd" || status === "Avstängd") avstangd++;
-        });
-
-        const total = banor.length;
-        const text = `${godkand}/${total} godkända, ${anmarkning} anmärkning, ${avstangd} avstängd`;
-
-        // Lägg till text i rubriken
-        const headerEl = document.querySelector(`#summary-${gruppId}`);
-        if (headerEl) {
-          headerEl.innerText = `– ${text}`;
-        }
-      }
-
-      // 🟩 Visa status under varje bana
-      for (const [banaId, status] of Object.entries(senastePerBana)) {
-        const container = document.querySelector(`[name='${banaId}']`)?.closest(".options");
-        if (container) {
-          const statusDiv = document.createElement("div");
-          statusDiv.className = "senaste-status";
-          statusDiv.style.fontSize = "0.9em";
-          statusDiv.style.color = "#555";
-          statusDiv.style.marginTop = "0.3rem";
-          statusDiv.innerText = `Senast inskickat: ${status}`;
-          container.parentElement.appendChild(statusDiv);
-        }
-      }
-
-    } catch (err) {
-      console.error("Kunde inte hämta senaste status:", err);
-    }
-  }
-
-  document.addEventListener("DOMContentLoaded", visaSenasteStatus);
-</script>
-
-
 </body>
 </html>
