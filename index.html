@@ -43,13 +43,17 @@
       text-decoration: none;
       background-color: #f6f5ee;
       color: #000000;
-      padding: 2rem 3rem;
+      padding: 1.5rem;
       font-size: 1.5rem;
       border: 2px solid #000000;
       border-radius: 0;
       transition: background-color 0.2s, color 0.2s;
-      display: inline-block;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
       min-width: 220px;
+      min-height: 120px; /* 🔒 Fixerar höjden */
     }
 
     .menu a:hover {
@@ -80,12 +84,12 @@
   <div class="menu">
     <div class="menu-item">
       <a href="daglig-kontroll.html">
-         Daglig kontroll
+        📋 Daglig kontroll
         <span id="kontroll-status" class="status-inline">Laddar...</span>
       </a>
     </div>
     <div class="menu-item">
-      <a href="incidentrapport.html"> Incidentrapport</a>
+      <a href="incidentrapport.html">⚠️ Incidentrapport</a>
     </div>
   </div>
 
