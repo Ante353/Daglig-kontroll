@@ -154,11 +154,6 @@
       return namn.toLowerCase().replace(/å/g, 'a').replace(/ä/g, 'a').replace(/ö/g, 'o').replace(/\s+/g, '_');
     }
 
-    function toggleSection(header) {
-      const content = header.nextElementSibling;
-      content.style.display = content.style.display === "block" ? "none" : "block";
-    }
-
     function toggleComment(id) {
       const radios = document.getElementsByName(id);
       const commentDiv = document.getElementById("comment-" + id);
@@ -285,10 +280,10 @@
       redigerar = true;
       document.getElementById("submit-button").style.display = "inline-block";
       document.getElementById("edit-button").style.display = "none";
-      document.getElementById("statusmeddelande").innerText = "Du redigerar dagens rapport – klicka på 'Skicka in' för att spara ändringarna.";
+      document.getElementById("statusmeddelande").innerText = "Du redigerar dagens rapport – klicka på 'Skicka in' för att spara ändringar.";
     });
 
-    document.getElementById("kontroll-form").addEventListener("submit", async function(e) {
+    document.getElementById("kontroll-form").addEventListener("submit", async function (e) {
       e.preventDefault();
       const formData = new FormData(this);
       const grupperadeData = {};
@@ -305,13 +300,14 @@
 
       if (redigerar) {
         for (let row of dagensData) {
-          const query = `?search=datum:${row.datum}&bana:${encodeURIComponent(row.bana)}`;
+          const datumKort = row.datum.split(" ")[0];
+          const query = `/search?datum=${datumKort}&bana=${encodeURIComponent(row.bana)}`;
           await fetch(`${SHEETDB_API}${query}`, { method: "DELETE" });
         }
       }
 
       const nyData = Object.entries(grupperadeData).map(([bana, info]) => ({
-        datum: idag,
+        datum: new Date().toLocaleString(),
         bana: bana,
         status: info.status,
         kommentar: info.comment
@@ -319,7 +315,9 @@
 
       await fetch(SHEETDB_API, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json"
+        },
         body: JSON.stringify({ data: nyData })
       });
 
@@ -333,7 +331,6 @@
 
     document.addEventListener("DOMContentLoaded", async () => {
       const sektioner = document.getElementById("sektioner");
-
       for (const [groupId, lista] of Object.entries(grupper)) {
         if (groupId === "langa_linbanan") continue;
         const sektion = document.createElement("div");
@@ -361,6 +358,11 @@
       await visaSenasteStatus();
       await kontrolleraOmRedanSkickat();
     });
+
+    function toggleSection(header) {
+      const content = header.nextElementSibling;
+      content.style.display = content.style.display === "block" ? "none" : "block";
+    }
   </script>
 </body>
 </html>
