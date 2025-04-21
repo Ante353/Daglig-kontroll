@@ -209,13 +209,13 @@
   const statusText = document.getElementById("statusmeddelande");
 
   formElement.addEventListener("submit", function(e) {
-    e.preventDefault(); // Stoppar vanlig formulärskickning
+    e.preventDefault(); // Stoppa vanlig formulärskickning
 
     const formData = new FormData(formElement);
     const grupperadeData = {};
 
     for (let [key, value] of formData.entries()) {
-      if (key.startsWith("kommentar_")) continue; // Vi lägger till kommentar separat
+      if (key.startsWith("kommentar_")) continue;
 
       const kommentarKey = "kommentar_" + key;
       const kommentar = formData.get(kommentarKey) || "";
@@ -226,18 +226,25 @@
       };
     }
 
-fetch("https://script.google.com/macros/s/AKfycbz2E-kApGxNd-RpOwbUANhX-qIjCnkfjJKqh38PGmSVeoJCkoCm2jaRWUCqYTJ6lW3Hnw/exec", {
+    // Skicka data till SheetDB
+    fetch("https://sheetdb.io/api/v1/0m6qr0irhuaa0", {
       method: "POST",
-      body: JSON.stringify(grupperadeData),
       headers: {
         "Content-Type": "application/json"
-      }
+      },
+      body: JSON.stringify({
+        data: Object.entries(grupperadeData).map(([bana, info]) => ({
+          datum: new Date().toLocaleString(),
+          bana: bana,
+          status: info.status,
+          kommentar: info.comment
+        }))
+      })
     })
-    .then(res => res.text())
-    .then(res => {
+    .then(res => res.json())
+    .then(() => {
       statusText.innerText = "Formuläret har skickats!";
       formElement.reset();
-      // Döljer alla kommentar-rutor efter reset
       document.querySelectorAll(".comment").forEach(el => el.style.display = "none");
     })
     .catch(err => {
@@ -246,6 +253,7 @@ fetch("https://script.google.com/macros/s/AKfycbz2E-kApGxNd-RpOwbUANhX-qIjCnkfjJ
     });
   });
 </script>
+
 
 </body>
 </html>
