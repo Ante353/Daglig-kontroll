@@ -89,8 +89,8 @@
         <div>
           <div>Gula Banor</div>
           <div class="rubrik-status">
-            <span id="live-gula_banor">🖊️ ...</span>
-            <span id="senaste-gula_banor">💾 ...</span>
+            <span id="live-gula_banor">...</span>
+            <span id="senaste-gula_banor">...</span>
           </div>
         </div>
       </div>
@@ -102,8 +102,8 @@
         <div>
           <div>Gröna Banor</div>
           <div class="rubrik-status">
-            <span id="live-grona_banor">🖊️ ...</span>
-            <span id="senaste-grona_banor">💾 ...</span>
+            <span id="live-grona_banor">...</span>
+            <span id="senaste-grona_banor">...</span>
           </div>
         </div>
       </div>
@@ -115,8 +115,8 @@
         <div>
           <div>Blåa Banor</div>
           <div class="rubrik-status">
-            <span id="live-blaa_banor">🖊️ ...</span>
-            <span id="senaste-blaa_banor">💾 ...</span>
+            <span id="live-blaa_banor">...</span>
+            <span id="senaste-blaa_banor">...</span>
           </div>
         </div>
       </div>
@@ -128,8 +128,8 @@
         <div>
           <div>Röda Banor</div>
           <div class="rubrik-status">
-            <span id="live-roda_banor">🖊️ ...</span>
-            <span id="senaste-roda_banor">💾 ...</span>
+            <span id="live-roda_banor">...</span>
+            <span id="senaste-roda_banor">...</span>
           </div>
         </div>
       </div>
@@ -141,8 +141,8 @@
         <div>
           <div>Svarta Banor</div>
           <div class="rubrik-status">
-            <span id="live-svarta_banor">🖊️ ...</span>
-            <span id="senaste-svarta_banor">💾 ...</span>
+            <span id="live-svarta_banor">...</span>
+            <span id="senaste-svarta_banor">...</span>
           </div>
         </div>
       </div>
@@ -167,6 +167,7 @@
     <p id="statusmeddelande" style="margin-top: 1rem; font-weight: bold;"></p>
   </form>
 
+  <!-- JavaScript för funktionalitet -->
   <script>
     const grupper = {
       "gula_banor": ["Gul 1", "Gul 2", "Gul 3", "Gul 4", "Gul 5", "Gul 6", "Gul Linbana"],
@@ -215,7 +216,7 @@
 
       const summary = `${godkand} godkända, ${anmarkning} anmärkning, ${avstangd} avstängd`;
       const el = document.getElementById("live-" + groupId);
-      if (el) el.innerText = `🖊️ ${summary}`;
+      if (el) el.innerText = summary;
     }
 
     function skapaBanaHTML(namn, groupId) {
@@ -244,50 +245,7 @@
         updateSummary(groupId);
       }
     });
-  </script>
 
-  <script>
-    const formElement = document.querySelector("form");
-    const statusText = document.getElementById("statusmeddelande");
-
-    formElement.addEventListener("submit", function(e) {
-      e.preventDefault();
-      const formData = new FormData(formElement);
-      const grupperadeData = {};
-
-      for (let [key, value] of formData.entries()) {
-        if (key.startsWith("kommentar_")) continue;
-        const kommentarKey = "kommentar_" + key;
-        const kommentar = formData.get(kommentarKey) || "";
-        grupperadeData[key] = { status: value, comment: kommentar };
-      }
-
-      fetch("https://sheetdb.io/api/v1/0m6qr0irhuaa0", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          data: Object.entries(grupperadeData).map(([bana, info]) => ({
-            datum: new Date().toLocaleString(),
-            bana: bana,
-            status: info.status,
-            kommentar: info.comment
-          }))
-        })
-      })
-      .then(res => res.json())
-      .then(() => {
-        statusText.innerText = "Formuläret har skickats!";
-        formElement.reset();
-        document.querySelectorAll(".comment").forEach(el => el.style.display = "none");
-      })
-      .catch(err => {
-        console.error("Fel vid skickning:", err);
-        statusText.innerText = "Något gick fel, försök igen.";
-      });
-    });
-  </script>
-
-  <script>
     const SHEETDB_API = "https://sheetdb.io/api/v1/0m6qr0irhuaa0";
 
     async function visaSenasteStatus() {
@@ -323,7 +281,7 @@
             else if (status === "avstängd" || status === "Avstängd") avstangd++;
           });
           const el = document.getElementById("senaste-" + groupId);
-          if (el) el.innerText = `💾 ${godkand} godkända, ${anmarkning} anmärkning, ${avstangd} avstängd`;
+          if (el) el.innerText = `${godkand} godkända, ${anmarkning} anmärkning, ${avstangd} avstängd`;
         }
 
         for (const [banaId, status] of Object.entries(senastePerBana)) {
