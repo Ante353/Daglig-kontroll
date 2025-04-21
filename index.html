@@ -69,23 +69,28 @@
       display: none;
       margin-top: 0.3rem;
       width: 100%;
+      position: relative;
     }
     textarea {
-      width: 100%;
+      width: calc(100% - 2rem);
       padding: 0.5rem;
       font-size: 1rem;
       border-radius: 5px;
       border: 1px solid #ccc;
+    }
+    .comment button {
+      position: absolute;
+      top: 6px;
+      right: 0;
     }
   </style>
 </head>
 <body>
   <h1>Daglig Kontroll – Höghöjdsbanor</h1>
   <form>
-
-    <!-- Sektioner (genereras via JavaScript) -->
     <div id="sektioner"></div>
 
+    <!-- Långa Linbanan -->
     <h3 style="margin-top: 2rem;">Långa Linbanan</h3>
     <div class="row">
       <div class="label">Långa Linbanan</div>
@@ -138,43 +143,44 @@
       });
 
       if (visaKommentar) {
-  commentDiv.style.display = "block";
+        commentDiv.style.display = "block";
 
-  if (!document.getElementById(fetchBtnId)) {
-    const btn = document.createElement("button");
-    btn.type = "button";
-    btn.id = fetchBtnId;
-    btn.innerText = "📋";
-    btn.title = "Hämta tidigare kommentar";
-    btn.style.marginLeft = "0.5rem";
-    btn.style.padding = "0.3rem 0.6rem";
-    btn.style.fontSize = "1.2rem";
-    btn.style.verticalAlign = "top";
-    btn.style.cursor = "pointer";
-    btn.style.background = "#eee";
-    btn.style.border = "1px solid #ccc";
-    btn.style.borderRadius = "4px";
+        if (!document.getElementById(fetchBtnId)) {
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.id = fetchBtnId;
+          btn.innerText = "📋";
+          btn.title = "Hämta tidigare kommentar";
+          btn.style.marginLeft = "0.5rem";
+          btn.style.padding = "0.3rem 0.6rem";
+          btn.style.fontSize = "1.2rem";
+          btn.style.verticalAlign = "top";
+          btn.style.cursor = "pointer";
+          btn.style.background = "#eee";
+          btn.style.border = "1px solid #ccc";
+          btn.style.borderRadius = "4px";
 
-    btn.addEventListener("click", () => {
-      const kommentar = senasteKommentarer[id];
-      if (kommentar) {
-        commentField.value = kommentar;
+          btn.addEventListener("click", () => {
+            const kommentar = senasteKommentarer[id];
+            if (kommentar) {
+              commentField.value = kommentar;
+            } else {
+              alert("Ingen kommentar hittades från senaste rapport.");
+            }
+          });
+
+          commentField.parentElement.insertBefore(btn, commentField.nextSibling);
+        }
+
       } else {
-        alert("Ingen kommentar hittades från senaste rapport.");
+        commentDiv.style.display = "none";
       }
-    });
-
-    // Lägg knappen direkt efter textfältet
-    commentField.parentElement.insertBefore(btn, commentField.nextSibling);
-  }
-
-} else {
-  commentDiv.style.display = "none";
-}
+    }
 
     function updateSummary(groupId) {
       const group = grupper[groupId];
       let godkand = 0, anmarkning = 0, avstangd = 0;
+
       group.forEach(namn => {
         const id = toId(namn);
         const radios = document.getElementsByName(id);
@@ -186,6 +192,7 @@
           }
         });
       });
+
       const summary = `${godkand} godkända, ${anmarkning} anmärkning, ${avstangd} avstängd`;
       const el = document.getElementById("live-" + groupId);
       if (el) el.innerText = summary;
@@ -220,8 +227,8 @@
         datumRuta.style.margin = "0 0 0.5rem 0";
         datumRuta.style.fontWeight = "bold";
         datumRuta.innerText = `Senaste rapport: ${senasteDatum}`;
-        const gulaSektion = document.querySelector(".section");
-        gulaSektion.parentElement.insertBefore(datumRuta, gulaSektion);
+        const sektioner = document.getElementById("sektioner");
+        sektioner.parentElement.insertBefore(datumRuta, sektioner);
 
         const senastePerBana = {};
         for (const rad of sorterat) {
@@ -245,19 +252,6 @@
           });
           const el = document.getElementById("senaste-" + groupId);
           if (el) el.innerText = `${godkand} godkända, ${anmarkning} anmärkning, ${avstangd} avstängd`;
-        }
-
-        for (const [banaId, status] of Object.entries(senastePerBana)) {
-          const container = document.querySelector(`[name='${banaId}']`)?.closest(".options");
-          if (container) {
-            const statusDiv = document.createElement("div");
-            statusDiv.className = "senaste-status";
-            statusDiv.style.fontSize = "0.9em";
-            statusDiv.style.color = "#555";
-            statusDiv.style.marginTop = "0.3rem";
-            statusDiv.innerText = `Senast inskickat: ${status}`;
-            container.parentElement.appendChild(statusDiv);
-          }
         }
 
       } catch (err) {
