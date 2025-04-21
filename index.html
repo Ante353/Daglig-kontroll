@@ -33,6 +33,12 @@
       margin-top: 2rem;
     }
 
+    .menu-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
     .menu a {
       text-decoration: none;
       background-color: #f6f5ee;
@@ -40,13 +46,27 @@
       padding: 2rem 3rem;
       font-size: 1.5rem;
       border: 2px solid #000000;
-      border-radius: 0; /* Fyrkantig */
+      border-radius: 0;
       transition: background-color 0.2s, color 0.2s;
     }
 
     .menu a:hover {
       background-color: #000000;
       color: #ffffff;
+    }
+
+    .status-text {
+      margin-top: 0.5rem;
+      font-size: 0.9rem;
+      font-weight: bold;
+    }
+
+    .status-green {
+      color: green;
+    }
+
+    .status-red {
+      color: red;
     }
   </style>
 </head>
@@ -55,9 +75,40 @@
   <img src="aventyrsheader.png" alt="Sörsjöns äventyrspark" class="header-image" />
 
   <div class="menu">
-    <a href="daglig-kontroll.html"> Daglig kontroll</a>
-    <a href="incidentrapport.html"> Incidentrapport</a>
+    <div class="menu-item">
+      <a href="daglig-kontroll.html">📋 Daglig kontroll</a>
+      <div id="kontroll-status" class="status-text">Laddar...</div>
+    </div>
+    <div class="menu-item">
+      <a href="incidentrapport.html">⚠️ Incidentrapport</a>
+    </div>
   </div>
+
+  <script>
+    const SHEETDB_URL = "https://sheetdb.io/api/v1/0m6qr0irhuaa0";
+    const idag = new Date().toISOString().split("T")[0];
+
+    async function kontrolleraStatus() {
+      try {
+        const response = await fetch(`${SHEETDB_URL}/search?datum=${idag}`);
+        const data = await response.json();
+        const statusElement = document.getElementById("kontroll-status");
+
+        if (data.length > 0) {
+          statusElement.innerText = "Inskickad";
+          statusElement.classList.add("status-green");
+        } else {
+          statusElement.innerText = "Ej inskickad";
+          statusElement.classList.add("status-red");
+        }
+      } catch (error) {
+        console.error("Kunde inte hämta status:", error);
+        document.getElementById("kontroll-status").innerText = "Fel vid hämtning";
+      }
+    }
+
+    kontrolleraStatus();
+  </script>
 
 </body>
 </html>
