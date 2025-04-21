@@ -154,6 +154,22 @@
       return namn.toLowerCase().replace(/å/g, 'a').replace(/ä/g, 'a').replace(/ö/g, 'o').replace(/\s+/g, '_');
     }
 
+    async function kontrolleraOmRedanSkickat() {
+      const res = await fetch(SHEETDB_API);
+      const data = await res.json();
+      dagensData = data.filter(row => row.datum?.startsWith(idag));
+      if (dagensData.length > 0) {
+        document.getElementById("submit-button").style.display = "none";
+        document.getElementById("edit-button").style.display = "inline-block";
+        document.getElementById("statusmeddelande").innerText = "En rapport är redan inskickad idag.";
+      }
+    }
+
+    function toggleSection(header) {
+      const content = header.nextElementSibling;
+      content.style.display = content.style.display === "block" ? "none" : "block";
+    }
+
     function toggleComment(id) {
       const radios = document.getElementsByName(id);
       const commentDiv = document.getElementById("comment-" + id);
@@ -251,17 +267,6 @@
       }
     }
 
-    async function kontrolleraOmRedanSkickat() {
-      const res = await fetch(SHEETDB_API);
-      const data = await res.json();
-      dagensData = data.filter(row => row.datum?.startsWith(idag));
-      if (dagensData.length > 0) {
-        document.getElementById("submit-button").style.display = "none";
-        document.getElementById("edit-button").style.display = "inline-block";
-        document.getElementById("statusmeddelande").innerText = "En rapport är redan inskickad idag.";
-      }
-    }
-
     document.getElementById("edit-button").addEventListener("click", () => {
       dagensData.forEach(row => {
         const banaId = row.bana?.toLowerCase().replace(/\s+/g, "_");
@@ -298,35 +303,33 @@
         };
       }
 
-      if (redigerar) {
-        for (let row of dagensData) {
-          const datumKort = row.datum.split(" ")[0];
-          const query = `/search?datum=${datumKort}&bana=${encodeURIComponent(row.bana)}`;
-          await fetch(`${SHEETDB_API}${query}`, { method: "DELETE" });
-        }
-      }
-
       const nyData = Object.entries(grupperadeData).map(([bana, info]) => ({
-        datum: new Date().toLocaleString(),
+        datum: idag,
         bana: bana,
         status: info.status,
         kommentar: info.comment
       }));
 
-      await fetch(SHEETDB_API, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ data: nyData })
-      });
+      try {
+        await fetch(`${SHEETDB_API}?force_update=true&conflict_column=datum,bana`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ data: nyData })
+        });
 
-      document.getElementById("statusmeddelande").innerText = redigerar
-        ? "Rapporten har uppdaterats!"
-        : "Formuläret har skickats!";
-      redigerar = false;
-      this.reset();
-      document.querySelectorAll(".comment").forEach(c => c.style.display = "none");
+        document.getElementById("statusmeddelande").innerText = redigerar
+          ? "Rapporten har uppdaterats!"
+          : "Formuläret har skickats!";
+        this.reset();
+        document.querySelectorAll(".comment").forEach(el => el.style.display = "none");
+        redigerar = false;
+
+      } catch (err) {
+        console.error("Fel vid skickning:", err);
+        document.getElementById("statusmeddelande").innerText = "Något gick fel, försök igen.";
+      }
     });
 
     document.addEventListener("DOMContentLoaded", async () => {
@@ -358,11 +361,6 @@
       await visaSenasteStatus();
       await kontrolleraOmRedanSkickat();
     });
-
-    function toggleSection(header) {
-      const content = header.nextElementSibling;
-      content.style.display = content.style.display === "block" ? "none" : "block";
-    }
   </script>
 </body>
 </html>
