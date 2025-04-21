@@ -86,11 +86,21 @@
       color: #555;
       margin-top: 0.3rem;
     }
+    #edit-button {
+      display: none;
+      margin-top: 1rem;
+      padding: 0.6rem 1rem;
+      font-size: 1rem;
+      background: #eee;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
   <h1>Daglig Kontroll – Höghöjdsbanor</h1>
-  <form>
+  <form id="kontroll-form">
     <div id="sektioner"></div>
 
     <!-- Långa Linbanan -->
@@ -119,7 +129,8 @@
       </div>
     </div>
 
-    <button type="submit" style="margin-top: 2rem; padding: 1rem; font-size: 1rem;">Skicka in</button>
+    <button id="submit-button" type="submit" style="margin-top: 2rem; padding: 1rem; font-size: 1rem;">Skicka in</button>
+    <button id="edit-button" type="button">Redigera dagens rapport</button>
     <p id="statusmeddelande" style="margin-top: 1rem; font-weight: bold;"></p>
   </form>
 
@@ -135,14 +146,11 @@
 
     const SHEETDB_API = "https://sheetdb.io/api/v1/0m6qr0irhuaa0";
     const senasteKommentarer = {};
+    const idag = new Date().toISOString().split("T")[0];
+    let dagensData = [];
 
     function toId(namn) {
       return namn.toLowerCase().replace(/å/g, 'a').replace(/ä/g, 'a').replace(/ö/g, 'o').replace(/\s+/g, '_');
-    }
-
-    function toggleSection(header) {
-      const content = header.nextElementSibling;
-      content.style.display = content.style.display === "block" ? "none" : "block";
     }
 
     function toggleComment(id) {
@@ -150,17 +158,14 @@
       const commentDiv = document.getElementById("comment-" + id);
       const commentField = commentDiv.querySelector("textarea");
       const fetchBtnId = "fetch-" + id;
-
       let visaKommentar = false;
       radios.forEach(r => {
         if (r.checked && (r.value === "anmärkning" || r.value === "avstängd")) {
           visaKommentar = true;
         }
       });
-
       if (visaKommentar) {
         commentDiv.style.display = "block";
-
         if (!document.getElementById(fetchBtnId)) {
           const btn = document.createElement("button");
           btn.type = "button";
@@ -175,7 +180,6 @@
           btn.style.background = "#eee";
           btn.style.border = "1px solid #ccc";
           btn.style.borderRadius = "4px";
-
           btn.addEventListener("click", () => {
             const kommentar = senasteKommentarer[id];
             if (kommentar) {
@@ -184,10 +188,8 @@
               alert("Ingen kommentar hittades från senaste rapport.");
             }
           });
-
           commentField.parentElement.insertBefore(btn, commentField.nextSibling);
         }
-
       } else {
         commentDiv.style.display = "none";
       }
@@ -196,7 +198,6 @@
     function updateSummary(groupId) {
       const group = grupper[groupId];
       let godkand = 0, anmarkning = 0, avstangd = 0;
-
       group.forEach(namn => {
         const id = toId(namn);
         const radios = document.getElementsByName(id);
@@ -208,7 +209,6 @@
           }
         });
       });
-
       const el = document.getElementById("live-" + groupId);
       if (el) el.innerText = `${godkand} godkända, ${anmarkning} anmärkning, ${avstangd} avstängd`;
     }
@@ -231,42 +231,58 @@
     }
 
     async function visaSenasteStatus() {
-      try {
-        const res = await fetch(SHEETDB_API);
-        const data = await res.json();
-        const sorterat = data.sort((a, b) => new Date(b.datum) - new Date(a.datum));
-        const senastePerBana = {};
-        for (const rad of sorterat) {
-          const banaId = rad.bana.toLowerCase().replace(/\s+/g, "_");
-          if (!senastePerBana[banaId]) {
-            senastePerBana[banaId] = rad.status;
-          }
-          if (!senasteKommentarer[banaId] && rad.kommentar) {
-            senasteKommentarer[banaId] = rad.kommentar;
-          }
+      const res = await fetch(SHEETDB_API);
+      const data = await res.json();
+      const senastePerBana = {};
+      for (const rad of data) {
+        const banaId = rad.bana.toLowerCase().replace(/\s+/g, "_");
+        if (!senastePerBana[banaId]) senastePerBana[banaId] = rad.status;
+        if (!senasteKommentarer[banaId] && rad.kommentar) senasteKommentarer[banaId] = rad.kommentar;
+      }
+      for (const [banaId, status] of Object.entries(senastePerBana)) {
+        const container = document.querySelector(`[name='${banaId}']`)?.closest(".options");
+        if (container) {
+          const statusDiv = document.createElement("div");
+          statusDiv.className = "senaste-status";
+          statusDiv.innerText = `Senaste rapport: ${status}`;
+          container.parentElement.appendChild(statusDiv);
         }
-
-        for (const [banaId, status] of Object.entries(senastePerBana)) {
-          const container = document.querySelector(`[name='${banaId}']`)?.closest(".options");
-          if (container) {
-            const statusDiv = document.createElement("div");
-            statusDiv.className = "senaste-status";
-            statusDiv.innerText = `Senaste rapport: ${status}`;
-            container.parentElement.appendChild(statusDiv);
-          }
-        }
-
-      } catch (err) {
-        console.error("Kunde inte hämta senaste status:", err);
       }
     }
 
-    document.addEventListener("DOMContentLoaded", () => {
-      const sektioner = document.getElementById("sektioner");
+    async function kontrolleraOmRedanSkickat() {
+      const res = await fetch(SHEETDB_API);
+      const data = await res.json();
+      dagensData = data.filter(row => row.datum?.startsWith(idag));
+      if (dagensData.length > 0) {
+        document.getElementById("submit-button").style.display = "none";
+        document.getElementById("edit-button").style.display = "inline-block";
+        document.getElementById("statusmeddelande").innerText = "En rapport är redan inskickad idag.";
+      }
+    }
 
+    document.getElementById("edit-button").addEventListener("click", () => {
+      dagensData.forEach(row => {
+        const banaId = row.bana?.toLowerCase().replace(/\s+/g, "_");
+        const radios = document.getElementsByName(banaId);
+        const kommentarFält = document.querySelector(`[name='kommentar_${banaId}']`);
+        if (radios) {
+          radios.forEach(r => {
+            if (r.value === row.status) r.checked = true;
+          });
+        }
+        if (kommentarFält) {
+          kommentarFält.value = row.kommentar || "";
+          document.getElementById("comment-" + banaId).style.display = "block";
+        }
+      });
+      document.getElementById("statusmeddelande").innerText = "Formuläret har laddats med dagens data. Du kan nu göra ändringar.";
+    });
+
+    document.addEventListener("DOMContentLoaded", async () => {
+      const sektioner = document.getElementById("sektioner");
       for (const [groupId, lista] of Object.entries(grupper)) {
         if (groupId === "langa_linbanan") continue;
-
         const sektion = document.createElement("div");
         sektion.className = "section";
         sektion.innerHTML = `
@@ -282,17 +298,20 @@
           <div class="section-content" id="content-${groupId}"></div>
         `;
         sektioner.appendChild(sektion);
-
-        const content = sektion.querySelector(`#content-${groupId}`);
+        const container = sektion.querySelector(`#content-${groupId}`);
         lista.forEach(namn => {
-          content.insertAdjacentHTML("beforeend", skapaBanaHTML(namn, groupId));
+          container.insertAdjacentHTML("beforeend", skapaBanaHTML(namn, groupId));
         });
-
         updateSummary(groupId);
       }
-
-      visaSenasteStatus();
+      await visaSenasteStatus();
+      await kontrolleraOmRedanSkickat();
     });
+
+    function toggleSection(header) {
+      const content = header.nextElementSibling;
+      content.style.display = content.style.display === "block" ? "none" : "block";
+    }
   </script>
 </body>
 </html>
