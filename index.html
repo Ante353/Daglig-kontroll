@@ -97,85 +97,20 @@
       <div class="section-content" id="content-gula_banor"></div>
     </div>
 
-    <div class="section">
-      <div class="section-header" onclick="toggleSection(this)">
-        <div>
-          <div>Gröna Banor</div>
-          <div class="rubrik-status">
-            <span id="live-grona_banor">...</span>
-            <span id="senaste-grona_banor">...</span>
-          </div>
-        </div>
-      </div>
-      <div class="section-content" id="content-grona_banor"></div>
-    </div>
-
-    <div class="section">
-      <div class="section-header" onclick="toggleSection(this)">
-        <div>
-          <div>Blåa Banor</div>
-          <div class="rubrik-status">
-            <span id="live-blaa_banor">...</span>
-            <span id="senaste-blaa_banor">...</span>
-          </div>
-        </div>
-      </div>
-      <div class="section-content" id="content-blaa_banor"></div>
-    </div>
-
-    <div class="section">
-      <div class="section-header" onclick="toggleSection(this)">
-        <div>
-          <div>Röda Banor</div>
-          <div class="rubrik-status">
-            <span id="live-roda_banor">...</span>
-            <span id="senaste-roda_banor">...</span>
-          </div>
-        </div>
-      </div>
-      <div class="section-content" id="content-roda_banor"></div>
-    </div>
-
-    <div class="section">
-      <div class="section-header" onclick="toggleSection(this)">
-        <div>
-          <div>Svarta Banor</div>
-          <div class="rubrik-status">
-            <span id="live-svarta_banor">...</span>
-            <span id="senaste-svarta_banor">...</span>
-          </div>
-        </div>
-      </div>
-      <div class="section-content" id="content-svarta_banor"></div>
-    </div>
-
-    <!-- Långa Linbanan -->
-    <h3 style="margin-top: 2rem;">Långa Linbanan</h3>
-    <div class="row">
-      <div class="label">Långa Linbanan</div>
-      <div class="options">
-        <label><input type="radio" name="langa_linbanan" value="godkänd" checked onchange="toggleComment('langa_linbanan')"> Fullt godkänd</label>
-        <label><input type="radio" name="langa_linbanan" value="anmärkning" onchange="toggleComment('langa_linbanan')"> Anmärkning</label>
-        <label><input type="radio" name="langa_linbanan" value="avstängd" onchange="toggleComment('langa_linbanan')"> Avstängd</label>
-      </div>
-    </div>
-    <div class="comment" id="comment-langa_linbanan">
-      <textarea name="kommentar_langa_linbanan" placeholder="Kommentar om något är fel..."></textarea>
-    </div>
+    <!-- Lägg till fler sektioner här på samma sätt -->
 
     <button type="submit" style="margin-top: 2rem; padding: 1rem; font-size: 1rem;">Skicka in</button>
     <p id="statusmeddelande" style="margin-top: 1rem; font-weight: bold;"></p>
   </form>
 
-  <!-- JavaScript för funktionalitet -->
   <script>
     const grupper = {
-      "gula_banor": ["Gul 1", "Gul 2", "Gul 3", "Gul 4", "Gul 5", "Gul 6", "Gul Linbana"],
-      "grona_banor": ["Grön 1", "Grön 2", "Grön 3", "Grön 4", "Grön 5"],
-      "blaa_banor": ["Blå 1", "Blå 2", "Blå 3", "Blå 4", "Blå Linbana"],
-      "roda_banor": ["Röd 1", "Röd 2", "Röd 3", "Röd 4"],
-      "svarta_banor": ["Svart 1", "Svart 13", "Svart 99"]
+      "gula_banor": ["Gul 1", "Gul 2", "Gul 3", "Gul 4", "Gul 5", "Gul 6", "Gul Linbana"]
+      // Lägg till fler grupper här om du vill
     };
+
+    const SHEETDB_API = "https://sheetdb.io/api/v1/0m6qr0irhuaa0";
+    const senasteKommentarer = {};
 
     function toId(namn) {
       return namn.toLowerCase().replace(/å/g, 'a').replace(/ä/g, 'a').replace(/ö/g, 'o').replace(/\s+/g, '_');
@@ -188,14 +123,44 @@
 
     function toggleComment(id) {
       const radios = document.getElementsByName(id);
-      const comment = document.getElementById("comment-" + id);
-      for (const r of radios) {
+      const commentDiv = document.getElementById("comment-" + id);
+      const commentField = commentDiv.querySelector("textarea");
+      const fetchBtnId = "fetch-" + id;
+
+      let visaKommentar = false;
+      radios.forEach(r => {
         if (r.checked && (r.value === "anmärkning" || r.value === "avstängd")) {
-          comment.style.display = "block";
-          return;
+          visaKommentar = true;
         }
+      });
+
+      if (visaKommentar) {
+        commentDiv.style.display = "block";
+
+        if (!document.getElementById(fetchBtnId)) {
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.id = fetchBtnId;
+          btn.innerText = "Hämta senaste kommentar";
+          btn.style.marginTop = "0.5rem";
+          btn.style.padding = "0.4rem";
+          btn.style.fontSize = "0.9rem";
+
+          btn.addEventListener("click", () => {
+            const kommentar = senasteKommentarer[id];
+            if (kommentar) {
+              commentField.value = kommentar;
+            } else {
+              alert("Ingen kommentar hittades från senaste rapport.");
+            }
+          });
+
+          commentDiv.appendChild(btn);
+        }
+
+      } else {
+        commentDiv.style.display = "none";
       }
-      comment.style.display = "none";
     }
 
     function updateSummary(groupId) {
@@ -236,18 +201,6 @@
       `;
     }
 
-    document.addEventListener("DOMContentLoaded", () => {
-      for (const [groupId, lista] of Object.entries(grupper)) {
-        const container = document.getElementById("content-" + groupId);
-        lista.forEach(namn => {
-          container.insertAdjacentHTML("beforeend", skapaBanaHTML(namn, groupId));
-        });
-        updateSummary(groupId);
-      }
-    });
-
-    const SHEETDB_API = "https://sheetdb.io/api/v1/0m6qr0irhuaa0";
-
     async function visaSenasteStatus() {
       try {
         const res = await fetch(SHEETDB_API);
@@ -268,6 +221,9 @@
           const banaId = rad.bana.toLowerCase().replace(/\s+/g, "_");
           if (!senastePerBana[banaId]) {
             senastePerBana[banaId] = rad.status;
+          }
+          if (!senasteKommentarer[banaId] && rad.kommentar) {
+            senasteKommentarer[banaId] = rad.kommentar;
           }
         }
 
@@ -302,7 +258,17 @@
       }
     }
 
-    document.addEventListener("DOMContentLoaded", visaSenasteStatus);
+    document.addEventListener("DOMContentLoaded", () => {
+      for (const [groupId, lista] of Object.entries(grupper)) {
+        const container = document.getElementById("content-" + groupId);
+        lista.forEach(namn => {
+          container.insertAdjacentHTML("beforeend", skapaBanaHTML(namn, groupId));
+        });
+        updateSummary(groupId);
+      }
+
+      visaSenasteStatus();
+    });
   </script>
 </body>
 </html>
