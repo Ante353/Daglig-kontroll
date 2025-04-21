@@ -83,21 +83,21 @@
   <h1>Daglig Kontroll – Höghöjdsbanor</h1>
   <form>
 
-    <!-- Sektioner -->
-    <div class="section">
-      <div class="section-header" onclick="toggleSection(this)">
-        <div>
-          <div>Gula Banor</div>
-          <div class="rubrik-status">
-            <span id="live-gula_banor">...</span>
-            <span id="senaste-gula_banor">...</span>
-          </div>
-        </div>
-      </div>
-      <div class="section-content" id="content-gula_banor"></div>
-    </div>
+    <!-- Sektioner (genereras via JavaScript) -->
+    <div id="sektioner"></div>
 
-    <!-- Lägg till fler sektioner här på samma sätt -->
+    <h3 style="margin-top: 2rem;">Långa Linbanan</h3>
+    <div class="row">
+      <div class="label">Långa Linbanan</div>
+      <div class="options">
+        <label><input type="radio" name="langa_linbanan" value="godkänd" checked onchange="toggleComment('langa_linbanan')"> Fullt godkänd</label>
+        <label><input type="radio" name="langa_linbanan" value="anmärkning" onchange="toggleComment('langa_linbanan')"> Anmärkning</label>
+        <label><input type="radio" name="langa_linbanan" value="avstängd" onchange="toggleComment('langa_linbanan')"> Avstängd</label>
+      </div>
+    </div>
+    <div class="comment" id="comment-langa_linbanan">
+      <textarea name="kommentar_langa_linbanan" placeholder="Kommentar om något är fel..."></textarea>
+    </div>
 
     <button type="submit" style="margin-top: 2rem; padding: 1rem; font-size: 1rem;">Skicka in</button>
     <p id="statusmeddelande" style="margin-top: 1rem; font-weight: bold;"></p>
@@ -105,8 +105,11 @@
 
   <script>
     const grupper = {
-      "gula_banor": ["Gul 1", "Gul 2", "Gul 3", "Gul 4", "Gul 5", "Gul 6", "Gul Linbana"]
-      // Lägg till fler grupper här om du vill
+      "gula_banor": ["Gul 1", "Gul 2", "Gul 3", "Gul 4", "Gul 5", "Gul 6", "Gul Linbana"],
+      "grona_banor": ["Grön 1", "Grön 2", "Grön 3", "Grön 4", "Grön 5"],
+      "blaa_banor": ["Blå 1", "Blå 2", "Blå 3", "Blå 4", "Blå Linbana"],
+      "roda_banor": ["Röd 1", "Röd 2", "Röd 3", "Röd 4"],
+      "svarta_banor": ["Svart 1", "Svart 13", "Svart 99"]
     };
 
     const SHEETDB_API = "https://sheetdb.io/api/v1/0m6qr0irhuaa0";
@@ -136,7 +139,6 @@
 
       if (visaKommentar) {
         commentDiv.style.display = "block";
-
         if (!document.getElementById(fetchBtnId)) {
           const btn = document.createElement("button");
           btn.type = "button";
@@ -145,7 +147,6 @@
           btn.style.marginTop = "0.5rem";
           btn.style.padding = "0.4rem";
           btn.style.fontSize = "0.9rem";
-
           btn.addEventListener("click", () => {
             const kommentar = senasteKommentarer[id];
             if (kommentar) {
@@ -154,10 +155,8 @@
               alert("Ingen kommentar hittades från senaste rapport.");
             }
           });
-
           commentDiv.appendChild(btn);
         }
-
       } else {
         commentDiv.style.display = "none";
       }
@@ -166,7 +165,6 @@
     function updateSummary(groupId) {
       const group = grupper[groupId];
       let godkand = 0, anmarkning = 0, avstangd = 0;
-
       group.forEach(namn => {
         const id = toId(namn);
         const radios = document.getElementsByName(id);
@@ -178,7 +176,6 @@
           }
         });
       });
-
       const summary = `${godkand} godkända, ${anmarkning} anmärkning, ${avstangd} avstängd`;
       const el = document.getElementById("live-" + groupId);
       if (el) el.innerText = summary;
@@ -259,8 +256,24 @@
     }
 
     document.addEventListener("DOMContentLoaded", () => {
+      const sektioner = document.getElementById("sektioner");
       for (const [groupId, lista] of Object.entries(grupper)) {
-        const container = document.getElementById("content-" + groupId);
+        const sektion = document.createElement("div");
+        sektion.className = "section";
+        sektion.innerHTML = `
+          <div class="section-header" onclick="toggleSection(this)">
+            <div>
+              <div>${groupId.replace("_", " ").replace("banor", "Banor").replace(/(^|\s)\S/g, l => l.toUpperCase())}</div>
+              <div class="rubrik-status">
+                <span id="live-${groupId}">...</span>
+                <span id="senaste-${groupId}">...</span>
+              </div>
+            </div>
+          </div>
+          <div class="section-content" id="content-${groupId}"></div>
+        `;
+        sektioner.appendChild(sektion);
+        const container = sektion.querySelector(`#content-${groupId}`);
         lista.forEach(namn => {
           container.insertAdjacentHTML("beforeend", skapaBanaHTML(namn, groupId));
         });
