@@ -148,7 +148,6 @@
 
   <!-- Rad med väder och besökare -->
   <div class="info-row">
-    <!-- Besökartabell -->
     <div class="visitor-table">
       <table>
         <tr>
@@ -166,7 +165,6 @@
       </table>
     </div>
 
-    <!-- Väderdropdown + knapp -->
     <div class="weather-select">
       <label for="weather">Väder:</label>
       <select id="weather">
@@ -177,7 +175,6 @@
         <option>Snö</option>
         <option>Blandat</option>
       </select>
-
       <button class="submit-weather" onclick="skickaBesokare()">Skicka in</button>
     </div>
   </div>
@@ -197,9 +194,9 @@
 
   <script>
     const SHEETDB_URL = "https://sheetdb.io/api/v1/0m6qr0irhuaa0";
-    const idag = new Date().toISOString().split("T")[0];
 
     async function kontrolleraStatus() {
+      const idag = new Date().toLocaleDateString("sv-SE"); // 🇸🇪 Ny fix
       console.log("Söker efter datum:", idag);
 
       try {
@@ -207,7 +204,6 @@
         const data = await response.json();
         console.log("All data från SheetDB:", data);
 
-        // Filtrera rader med exakt dagens datum
         const dagensRader = data.filter(row => row.datum === idag);
         console.log("Filtrerade rader för idag:", dagensRader);
 
@@ -229,6 +225,7 @@
     }
 
     function skickaBesokare() {
+      const idag = new Date().toLocaleDateString("sv-SE");
       const vuxna = document.getElementById("vuxna").value;
       const ungdomar = document.getElementById("ungdomar").value;
       const barn = document.getElementById("barn").value;
