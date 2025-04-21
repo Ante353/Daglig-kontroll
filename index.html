@@ -30,8 +30,6 @@
       background: #eee;
       padding: 1rem;
       font-weight: bold;
-      cursor: pointer;
-      user-select: none;
     }
     .section-header > div {
       display: flex;
@@ -90,18 +88,30 @@
   <form>
     <div id="sektioner"></div>
 
-    <!-- Långa Linbanan -->
-    <h3 style="margin-top: 2rem;">Långa Linbanan</h3>
-    <div class="row">
-      <div class="label">Långa Linbanan</div>
-      <div class="options">
-        <label><input type="radio" name="langa_linbanan" value="godkänd" checked onchange="toggleComment('langa_linbanan')"> Fullt godkänd</label>
-        <label><input type="radio" name="langa_linbanan" value="anmärkning" onchange="toggleComment('langa_linbanan')"> Anmärkning</label>
-        <label><input type="radio" name="langa_linbanan" value="avstängd" onchange="toggleComment('langa_linbanan')"> Avstängd</label>
+    <!-- Långa Linbanan som vanlig sektion utan dropdown -->
+    <div class="section">
+      <div class="section-header">
+        <div>
+          <div>Långa Linbanan</div>
+          <div class="rubrik-status">
+            <span id="live-langa_linbanan">...</span>
+            <span id="senaste-langa_linbanan">...</span>
+          </div>
+        </div>
       </div>
-    </div>
-    <div class="comment" id="comment-langa_linbanan">
-      <textarea name="kommentar_langa_linbanan" placeholder="Kommentar om något är fel..."></textarea>
+      <div class="section-content" style="display: block;">
+        <div class="row">
+          <div class="label">Långa Linbanan</div>
+          <div class="options">
+            <label><input type="radio" name="langa_linbanan" value="godkänd" checked onchange="toggleComment('langa_linbanan'); updateSummary('langa_linbanan')"> Fullt godkänd</label>
+            <label><input type="radio" name="langa_linbanan" value="anmärkning" onchange="toggleComment('langa_linbanan'); updateSummary('langa_linbanan')"> Anmärkning</label>
+            <label><input type="radio" name="langa_linbanan" value="avstängd" onchange="toggleComment('langa_linbanan'); updateSummary('langa_linbanan')"> Avstängd</label>
+          </div>
+        </div>
+        <div class="comment" id="comment-langa_linbanan">
+          <textarea name="kommentar_langa_linbanan" placeholder="Kommentar om något är fel..."></textarea>
+        </div>
+      </div>
     </div>
 
     <button type="submit" style="margin-top: 2rem; padding: 1rem; font-size: 1rem;">Skicka in</button>
@@ -114,7 +124,8 @@
       "grona_banor": ["Grön 1", "Grön 2", "Grön 3", "Grön 4", "Grön 5"],
       "blaa_banor": ["Blå 1", "Blå 2", "Blå 3", "Blå 4", "Blå Linbana"],
       "roda_banor": ["Röd 1", "Röd 2", "Röd 3", "Röd 4"],
-      "svarta_banor": ["Svart 1", "Svart 13", "Svart 99"]
+      "svarta_banor": ["Svart 1", "Svart 13", "Svart 99"],
+      "langa_linbanan": ["Långa Linbanan"]
     };
 
     const SHEETDB_API = "https://sheetdb.io/api/v1/0m6qr0irhuaa0";
@@ -144,7 +155,6 @@
 
       if (visaKommentar) {
         commentDiv.style.display = "block";
-
         if (!document.getElementById(fetchBtnId)) {
           const btn = document.createElement("button");
           btn.type = "button";
@@ -180,7 +190,6 @@
     function updateSummary(groupId) {
       const group = grupper[groupId];
       let godkand = 0, anmarkning = 0, avstangd = 0;
-
       group.forEach(namn => {
         const id = toId(namn);
         const radios = document.getElementsByName(id);
@@ -192,7 +201,6 @@
           }
         });
       });
-
       const summary = `${godkand} godkända, ${anmarkning} anmärkning, ${avstangd} avstängd`;
       const el = document.getElementById("live-" + groupId);
       if (el) el.innerText = summary;
@@ -262,6 +270,7 @@
     document.addEventListener("DOMContentLoaded", () => {
       const sektioner = document.getElementById("sektioner");
       for (const [groupId, lista] of Object.entries(grupper)) {
+        if (groupId === "langa_linbanan") continue; // hanteras separat
         const sektion = document.createElement("div");
         sektion.className = "section";
         sektion.innerHTML = `
