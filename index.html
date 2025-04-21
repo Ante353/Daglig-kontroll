@@ -254,7 +254,7 @@
   });
 </script>
 
-<script>
+<<script>
   const SHEETDB_API = "https://sheetdb.io/api/v1/0m6qr0irhuaa0";
   const banorMedStatus = ["gul_1", "gron_3"];
 
@@ -266,26 +266,18 @@
       const sorterat = data.sort((a, b) => new Date(b.datum) - new Date(a.datum));
       const senasteDatum = sorterat[0]?.datum?.split(",")[0] ?? "–";
 
-      // Skapa ruta med endast datum
+      // ➕ Skapa rutan för "Senaste rapport: [datum]"
       const datumRuta = document.createElement("div");
       datumRuta.style.textAlign = "right";
-      datumRuta.style.marginBottom = "0.5rem";
+      datumRuta.style.margin = "0 0 0.5rem 0";
       datumRuta.style.fontWeight = "bold";
       datumRuta.innerText = `Senaste rapport: ${senasteDatum}`;
 
-      // Skapa ruta med endast datum
-const datumRuta = document.createElement("div");
-datumRuta.style.textAlign = "right";
-datumRuta.style.margin = "0 0 0.5rem 0";
-datumRuta.style.fontWeight = "bold";
-datumRuta.innerText = `Senaste rapport: ${senasteDatum}`;
+      // ➕ Placera rutan före Gula Banor-sektionen (utanför ramen)
+      const gulaSektionWrapper = document.querySelector(".section");
+      gulaSektionWrapper.parentElement.insertBefore(datumRuta, gulaSektionWrapper);
 
-// Placera den före gula sektionen – utanför ramen
-const gulaSektionWrapper = document.querySelector(".section");
-gulaSektionWrapper.parentElement.insertBefore(datumRuta, gulaSektionWrapper);
-
-
-      // Visa under varje bana (fortfarande bara Gul 1 och Grön 3)
+      // 🔄 Visa status under respektive bana (endast Gul 1 & Grön 3)
       const senastePerBana = {};
       for (const rad of sorterat) {
         const banaId = rad.bana.toLowerCase().replace(/\s+/g, "_");
@@ -314,7 +306,6 @@ gulaSektionWrapper.parentElement.insertBefore(datumRuta, gulaSektionWrapper);
 
   document.addEventListener("DOMContentLoaded", visaSenasteStatus);
 </script>
-
 
 
 </body>
