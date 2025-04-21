@@ -135,183 +135,101 @@
   </form>
 
   <script>
-    const grupper = {
-      "gula_banor": ["Gul 1", "Gul 2", "Gul 3", "Gul 4", "Gul 5", "Gul 6", "Gul Linbana"],
-      "grona_banor": ["Grön 1", "Grön 2", "Grön 3", "Grön 4", "Grön 5"],
-      "blaa_banor": ["Blå 1", "Blå 2", "Blå 3", "Blå 4", "Blå Linbana"],
-      "roda_banor": ["Röd 1", "Röd 2", "Röd 3", "Röd 4"],
-      "svarta_banor": ["Svart 1", "Svart 13", "Svart 99"],
-      "langa_linbanan": ["Långa Linbanan"]
-    };
+    <!-- 🧠 ALLA delar av sidan är som tidigare fram till <script> -->
 
-    const SHEETDB_API = "https://sheetdb.io/api/v1/0m6qr0irhuaa0";
-    const senasteKommentarer = {};
-    const idag = new Date().toISOString().split("T")[0];
-    let dagensData = [];
+<script>
+  const grupper = {
+    "gula_banor": ["Gul 1", "Gul 2", "Gul 3", "Gul 4", "Gul 5", "Gul 6", "Gul Linbana"],
+    "grona_banor": ["Grön 1", "Grön 2", "Grön 3", "Grön 4", "Grön 5"],
+    "blaa_banor": ["Blå 1", "Blå 2", "Blå 3", "Blå 4", "Blå Linbana"],
+    "roda_banor": ["Röd 1", "Röd 2", "Röd 3", "Röd 4"],
+    "svarta_banor": ["Svart 1", "Svart 13", "Svart 99"],
+    "langa_linbanan": ["Långa Linbanan"]
+  };
 
-    function toId(namn) {
-      return namn.toLowerCase().replace(/å/g, 'a').replace(/ä/g, 'a').replace(/ö/g, 'o').replace(/\s+/g, '_');
+  const SHEETDB_API = "https://sheetdb.io/api/v1/0m6qr0irhuaa0";
+  const senasteKommentarer = {};
+  const idag = new Date().toISOString().split("T")[0];
+  let dagensData = [];
+  let redigerar = false;
+
+  // Formulärskickning
+  document.getElementById("kontroll-form").addEventListener("submit", async function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    const grupperadeData = {};
+
+    for (let [key, value] of formData.entries()) {
+      if (key.startsWith("kommentar_")) continue;
+      const kommentarKey = "kommentar_" + key;
+      const kommentar = formData.get(kommentarKey) || "";
+      grupperadeData[key] = {
+        status: value,
+        comment: kommentar
+      };
     }
 
-    function toggleComment(id) {
-      const radios = document.getElementsByName(id);
-      const commentDiv = document.getElementById("comment-" + id);
-      const commentField = commentDiv.querySelector("textarea");
-      const fetchBtnId = "fetch-" + id;
-      let visaKommentar = false;
-      radios.forEach(r => {
-        if (r.checked && (r.value === "anmärkning" || r.value === "avstängd")) {
-          visaKommentar = true;
+    // 🔁 Om redigering – ta bort gammal data först
+    if (redigerar) {
+      try {
+        for (let row of dagensData) {
+          const query = `?search=datum:${row.datum}&bana:${encodeURIComponent(row.bana)}`;
+          await fetch(`${SHEETDB_API}${query}`, { method: "DELETE" });
         }
-      });
-      if (visaKommentar) {
-        commentDiv.style.display = "block";
-        if (!document.getElementById(fetchBtnId)) {
-          const btn = document.createElement("button");
-          btn.type = "button";
-          btn.id = fetchBtnId;
-          btn.innerText = "📋";
-          btn.title = "Hämta tidigare kommentar";
-          btn.style.marginLeft = "0.5rem";
-          btn.style.padding = "0.3rem 0.6rem";
-          btn.style.fontSize = "1.2rem";
-          btn.style.verticalAlign = "top";
-          btn.style.cursor = "pointer";
-          btn.style.background = "#eee";
-          btn.style.border = "1px solid #ccc";
-          btn.style.borderRadius = "4px";
-          btn.addEventListener("click", () => {
-            const kommentar = senasteKommentarer[id];
-            if (kommentar) {
-              commentField.value = kommentar;
-            } else {
-              alert("Ingen kommentar hittades från senaste rapport.");
-            }
-          });
-          commentField.parentElement.insertBefore(btn, commentField.nextSibling);
-        }
-      } else {
-        commentDiv.style.display = "none";
+      } catch (err) {
+        console.error("Kunde inte radera gamla rader:", err);
       }
     }
 
-    function updateSummary(groupId) {
-      const group = grupper[groupId];
-      let godkand = 0, anmarkning = 0, avstangd = 0;
-      group.forEach(namn => {
-        const id = toId(namn);
-        const radios = document.getElementsByName(id);
+    // 📨 Skicka nya datan (POST)
+    try {
+      const nyData = Object.entries(grupperadeData).map(([bana, info]) => ({
+        datum: idag,
+        bana: bana,
+        status: info.status,
+        kommentar: info.comment
+      }));
+
+      await fetch(SHEETDB_API, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ data: nyData })
+      });
+
+      document.getElementById("statusmeddelande").innerText = redigerar
+        ? "Rapporten har uppdaterats!"
+        : "Formuläret har skickats!";
+      this.reset();
+      redigerar = false;
+    } catch (err) {
+      console.error("Fel vid skickning:", err);
+      document.getElementById("statusmeddelande").innerText = "Något gick fel. Försök igen.";
+    }
+  });
+
+  // ⬇️ Övriga funktioner (toggleComment, updateSummary, visaSenasteStatus, kontrolleraOmRedanSkickat)
+  // är samma som innan – och du har dem redan i filen!
+
+  document.getElementById("edit-button").addEventListener("click", () => {
+    dagensData.forEach(row => {
+      const banaId = row.bana?.toLowerCase().replace(/\s+/g, "_");
+      const radios = document.getElementsByName(banaId);
+      const kommentarFält = document.querySelector(`[name='kommentar_${banaId}']`);
+      if (radios) {
         radios.forEach(r => {
-          if (r.checked) {
-            if (r.value === "godkänd") godkand++;
-            else if (r.value === "anmärkning") anmarkning++;
-            else if (r.value === "avstängd") avstangd++;
-          }
+          if (r.value === row.status) r.checked = true;
         });
-      });
-      const el = document.getElementById("live-" + groupId);
-      if (el) el.innerText = `${godkand} godkända, ${anmarkning} anmärkning, ${avstangd} avstängd`;
-    }
-
-    function skapaBanaHTML(namn, groupId) {
-      const id = toId(namn);
-      return `
-        <div class="row">
-          <div class="label">${namn}</div>
-          <div class="options">
-            <label><input type="radio" name="${id}" value="godkänd" checked onchange="toggleComment('${id}'); updateSummary('${groupId}')"> Fullt godkänd</label>
-            <label><input type="radio" name="${id}" value="anmärkning" onchange="toggleComment('${id}'); updateSummary('${groupId}')"> Anmärkning</label>
-            <label><input type="radio" name="${id}" value="avstängd" onchange="toggleComment('${id}'); updateSummary('${groupId}')"> Avstängd</label>
-          </div>
-        </div>
-        <div class="comment" id="comment-${id}">
-          <textarea name="kommentar_${id}" placeholder="Kommentar om något är fel..."></textarea>
-        </div>
-      `;
-    }
-
-    async function visaSenasteStatus() {
-      const res = await fetch(SHEETDB_API);
-      const data = await res.json();
-      const senastePerBana = {};
-      for (const rad of data) {
-        const banaId = rad.bana.toLowerCase().replace(/\s+/g, "_");
-        if (!senastePerBana[banaId]) senastePerBana[banaId] = rad.status;
-        if (!senasteKommentarer[banaId] && rad.kommentar) senasteKommentarer[banaId] = rad.kommentar;
       }
-      for (const [banaId, status] of Object.entries(senastePerBana)) {
-        const container = document.querySelector(`[name='${banaId}']`)?.closest(".options");
-        if (container) {
-          const statusDiv = document.createElement("div");
-          statusDiv.className = "senaste-status";
-          statusDiv.innerText = `Senaste rapport: ${status}`;
-          container.parentElement.appendChild(statusDiv);
-        }
+      if (kommentarFält) {
+        kommentarFält.value = row.kommentar || "";
+        document.getElementById("comment-" + banaId).style.display = "block";
       }
-    }
-
-    async function kontrolleraOmRedanSkickat() {
-      const res = await fetch(SHEETDB_API);
-      const data = await res.json();
-      dagensData = data.filter(row => row.datum?.startsWith(idag));
-      if (dagensData.length > 0) {
-        document.getElementById("submit-button").style.display = "none";
-        document.getElementById("edit-button").style.display = "inline-block";
-        document.getElementById("statusmeddelande").innerText = "En rapport är redan inskickad idag.";
-      }
-    }
-
-    document.getElementById("edit-button").addEventListener("click", () => {
-      dagensData.forEach(row => {
-        const banaId = row.bana?.toLowerCase().replace(/\s+/g, "_");
-        const radios = document.getElementsByName(banaId);
-        const kommentarFält = document.querySelector(`[name='kommentar_${banaId}']`);
-        if (radios) {
-          radios.forEach(r => {
-            if (r.value === row.status) r.checked = true;
-          });
-        }
-        if (kommentarFält) {
-          kommentarFält.value = row.kommentar || "";
-          document.getElementById("comment-" + banaId).style.display = "block";
-        }
-      });
-      document.getElementById("statusmeddelande").innerText = "Formuläret har laddats med dagens data. Du kan nu göra ändringar.";
     });
-
-    document.addEventListener("DOMContentLoaded", async () => {
-      const sektioner = document.getElementById("sektioner");
-      for (const [groupId, lista] of Object.entries(grupper)) {
-        if (groupId === "langa_linbanan") continue;
-        const sektion = document.createElement("div");
-        sektion.className = "section";
-        sektion.innerHTML = `
-          <div class="section-header" onclick="toggleSection(this)">
-            <div>
-              <div>${groupId.replace("_", " ").replace("banor", "Banor").replace(/(^|\\s)\\S/g, l => l.toUpperCase())}</div>
-              <div class="rubrik-status">
-                <span id="live-${groupId}">...</span>
-                <span id="senaste-${groupId}">...</span>
-              </div>
-            </div>
-          </div>
-          <div class="section-content" id="content-${groupId}"></div>
-        `;
-        sektioner.appendChild(sektion);
-        const container = sektion.querySelector(`#content-${groupId}`);
-        lista.forEach(namn => {
-          container.insertAdjacentHTML("beforeend", skapaBanaHTML(namn, groupId));
-        });
-        updateSummary(groupId);
-      }
-      await visaSenasteStatus();
-      await kontrolleraOmRedanSkickat();
-    });
-
-    function toggleSection(header) {
-      const content = header.nextElementSibling;
-      content.style.display = content.style.display === "block" ? "none" : "block";
-    }
+    redigerar = true;
+    document.getElementById("submit-button").style.display = "inline-block";
+    document.getElementById("edit-button").style.display = "none";
+    document.getElementById("statusmeddelande").innerText = "Du redigerar dagens rapport – klicka på 'Skicka in' för att spara ändringarna.";
+  });
   </script>
 </body>
 </html>
