@@ -196,35 +196,49 @@
   </div>
 
   <script>
-  const SHEETDB_URL = "https://sheetdb.io/api/v1/0m6qr0irhuaa0";
-
-  async function kontrolleraStatus() {
+    const SHEETDB_URL = "https://sheetdb.io/api/v1/0m6qr0irhuaa0";
     const idag = new Date().toISOString().split("T")[0];
-    console.log("Söker efter datum:", idag); // 👈 Loggar vilket datum som söks
 
-    try {
-      const response = await fetch(`${SHEETDB_URL}/search?datum=${idag}`);
-      const data = await response.json();
-      console.log("Resultat från SheetDB:", data); // 👈 Loggar vad som hittades
+    async function kontrolleraStatus() {
+      console.log("Söker efter datum:", idag);
 
-      const statusElement = document.getElementById("kontroll-status");
+      try {
+        const response = await fetch(`${SHEETDB_URL}`);
+        const data = await response.json();
+        console.log("All data från SheetDB:", data);
 
-      if (data.length > 0) {
-        statusElement.innerText = "Inskickad";
-        statusElement.classList.add("status-green");
-      } else {
-        statusElement.innerText = "Ej inskickad";
+        // Filtrera rader med exakt dagens datum
+        const dagensRader = data.filter(row => row.datum === idag);
+        console.log("Filtrerade rader för idag:", dagensRader);
+
+        const statusElement = document.getElementById("kontroll-status");
+
+        if (dagensRader.length > 0) {
+          statusElement.innerText = "Inskickad";
+          statusElement.classList.add("status-green");
+        } else {
+          statusElement.innerText = "Ej inskickad";
+          statusElement.classList.add("status-red");
+        }
+      } catch (error) {
+        console.error("Kunde inte hämta status:", error);
+        const statusElement = document.getElementById("kontroll-status");
+        statusElement.innerText = "Fel vid hämtning";
         statusElement.classList.add("status-red");
       }
-    } catch (error) {
-      console.error("Kunde inte hämta status:", error);
-      const statusElement = document.getElementById("kontroll-status");
-      statusElement.innerText = "Fel vid hämtning";
-      statusElement.classList.add("status-red");
     }
-  }
 
-  kontrolleraStatus();
+    function skickaBesokare() {
+      const vuxna = document.getElementById("vuxna").value;
+      const ungdomar = document.getElementById("ungdomar").value;
+      const barn = document.getElementById("barn").value;
+      const vader = document.getElementById("weather").value;
+
+      console.log("Skicka till Sheets:", { datum: idag, vuxna, ungdomar, barn, vader });
+      alert("Funktion för att skicka in väder och besökare läggs till senare!");
+    }
+
+    kontrolleraStatus();
   </script>
 
 </body>
