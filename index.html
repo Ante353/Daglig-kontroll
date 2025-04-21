@@ -225,12 +225,15 @@
       const barn = document.getElementById("barn").value || "0";
       const vader = document.getElementById("weather").value;
 
+      const totalt = Number(vuxna) + Number(ungdomar) + Number(barn);
+
       const data = {
         data: [{
           datum: datum,
           vuxna: vuxna,
           ungdomar: ungdomar,
           barn: barn,
+          totalt: totalt,
           vader: vader
         }]
       };
