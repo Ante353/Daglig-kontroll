@@ -254,6 +254,55 @@
   });
 </script>
 
+<script>
+  // SheetDB API-länk
+  const SHEETDB_API = "https://sheetdb.io/api/v1/0m6qr0irhuaa0";
+
+  // Banor vi vill visa senaste status för
+  const banorMedStatus = ["gul_1", "gron_3"];
+
+  // Funktion för att hämta och visa senaste status
+  async function visaSenasteStatus() {
+    try {
+      const res = await fetch(SHEETDB_API);
+      const json = await res.json();
+
+      // Sortera raderna efter datum (nyast först)
+      const sorterat = json.sort((a, b) => new Date(b.datum) - new Date(a.datum));
+
+      // Spara senaste status för varje bana
+      const senaste = {};
+
+      for (const rad of sorterat) {
+        const bana = rad.bana.toLowerCase().replace(/\s+/g, "_");
+        if (banorMedStatus.includes(bana) && !senaste[bana]) {
+          senaste[bana] = rad;
+        }
+      }
+
+      // Visa info under respektive bana
+      for (const [id, data] of Object.entries(senaste)) {
+        const statusText = `Senast inskickat: ${data.status} – ${data.datum}`;
+        const container = document.querySelector(`[name='${id}']`)?.closest(".options");
+        if (container) {
+          const statusDiv = document.createElement("div");
+          statusDiv.className = "senaste-status";
+          statusDiv.style.fontSize = "0.9em";
+          statusDiv.style.color = "#555";
+          statusDiv.style.marginTop = "0.3rem";
+          statusDiv.innerText = statusText;
+          container.parentElement.appendChild(statusDiv);
+        }
+      }
+
+    } catch (err) {
+      console.error("Kunde inte hämta senaste status:", err);
+    }
+  }
+
+  // Kör när sidan laddats klart
+  document.addEventListener("DOMContentLoaded", visaSenasteStatus);
+</script>
 
 </body>
 </html>
