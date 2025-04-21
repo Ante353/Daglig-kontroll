@@ -15,7 +15,7 @@
       background-color: #efeee3;
       color: #2c3e50;
       text-align: center;
-      padding-top: 1rem;
+      padding-top: 2rem;
     }
 
     .header-image {
@@ -27,25 +27,26 @@
 
     .menu {
       display: flex;
-      flex-direction: column;
-      gap: 1.5rem;
-      max-width: 300px;
-      margin: 0 auto;
+      justify-content: center;
+      gap: 2rem;
+      flex-wrap: wrap;
+      margin-top: 2rem;
     }
 
     .menu a {
       text-decoration: none;
-      background-color: #2ecc71;
-      color: white;
-      padding: 1rem;
-      font-size: 1.2rem;
-      border-radius: 8px;
-      transition: background-color 0.3s;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      background-color: #ffffff;
+      color: #000000;
+      padding: 2rem 3rem;
+      font-size: 1.5rem;
+      border: 2px solid #000000;
+      border-radius: 0; /* Fyrkantig */
+      transition: background-color 0.2s, color 0.2s;
     }
 
     .menu a:hover {
-      background-color: #27ae60;
+      background-color: #000000;
+      color: #ffffff;
     }
   </style>
 </head>
@@ -54,8 +55,8 @@
   <img src="aventyrsheader.png" alt="Sörsjöns äventyrspark" class="header-image" />
 
   <div class="menu">
-    <a href="daglig-kontroll.html">📋 Daglig kontroll</a>
-    <a href="incidentrapport.html">⚠️ Incidentrapport</a>
+    <a href="daglig-kontroll.html"> Daglig kontroll</a>
+    <a href="incidentrapport.html"> Incidentrapport</a>
   </div>
 
 </body>
