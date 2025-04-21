@@ -255,54 +255,67 @@
 </script>
 
 <script>
-  // SheetDB API-länk
   const SHEETDB_API = "https://sheetdb.io/api/v1/0m6qr0irhuaa0";
-
-  // Banor vi vill visa senaste status för
   const banorMedStatus = ["gul_1", "gron_3"];
 
-  // Funktion för att hämta och visa senaste status
   async function visaSenasteStatus() {
     try {
       const res = await fetch(SHEETDB_API);
-      const json = await res.json();
+      const data = await res.json();
 
-      // Sortera raderna efter datum (nyast först)
-      const sorterat = json.sort((a, b) => new Date(b.datum) - new Date(a.datum));
+      // Sortera nyast först
+      const sorterat = data.sort((a, b) => new Date(b.datum) - new Date(a.datum));
 
-      // Spara senaste status för varje bana
-      const senaste = {};
+      // Spara senaste per bana
+      const senastePerBana = {};
 
       for (const rad of sorterat) {
-        const bana = rad.bana.toLowerCase().replace(/\s+/g, "_");
-        if (banorMedStatus.includes(bana) && !senaste[bana]) {
-          senaste[bana] = rad;
+        const banaId = rad.bana.toLowerCase().replace(/\s+/g, "_");
+        if (banorMedStatus.includes(banaId) && !senastePerBana[banaId]) {
+          senastePerBana[banaId] = rad.status;
         }
       }
 
-      // Visa info under respektive bana
-      for (const [id, data] of Object.entries(senaste)) {
-        const statusText = `Senast inskickat: ${data.status} – ${data.datum}`;
-        const container = document.querySelector(`[name='${id}']`)?.closest(".options");
+      // Visa under respektive bana
+      for (const [banaId, status] of Object.entries(senastePerBana)) {
+        const text = `Senast inskickat: ${status}`;
+        const container = document.querySelector(`[name='${banaId}']`)?.closest(".options");
         if (container) {
           const statusDiv = document.createElement("div");
           statusDiv.className = "senaste-status";
           statusDiv.style.fontSize = "0.9em";
           statusDiv.style.color = "#555";
           statusDiv.style.marginTop = "0.3rem";
-          statusDiv.innerText = statusText;
+          statusDiv.innerText = text;
           container.parentElement.appendChild(statusDiv);
         }
       }
+
+      // Visa sammanfattning i toppen
+      const senastDatum = sorterat[0]?.datum?.split(",")[0] ?? "";
+      let topSummary = `<strong>Senaste rapport: ${senastDatum}</strong><br>`;
+      for (const bana of banorMedStatus) {
+        const namn = bana.replace("_", " ").replace("gron", "Grön").replace("gul", "Gul");
+        const status = senastePerBana[bana] ?? "Ingen data";
+        topSummary += `${namn}: ${status}<br>`;
+      }
+
+      const rubrik = document.querySelector("h1");
+      const infoBox = document.createElement("div");
+      infoBox.style.textAlign = "center";
+      infoBox.style.marginTop = "0.5rem";
+      infoBox.style.fontSize = "1rem";
+      infoBox.innerHTML = topSummary;
+      rubrik.insertAdjacentElement("afterend", infoBox);
 
     } catch (err) {
       console.error("Kunde inte hämta senaste status:", err);
     }
   }
 
-  // Kör när sidan laddats klart
   document.addEventListener("DOMContentLoaded", visaSenasteStatus);
 </script>
+
 
 </body>
 </html>
