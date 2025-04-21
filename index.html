@@ -81,6 +81,11 @@
       top: 6px;
       right: 0;
     }
+    .senaste-status {
+      font-size: 0.9em;
+      color: #555;
+      margin-top: 0.3rem;
+    }
   </style>
 </head>
 <body>
@@ -88,7 +93,7 @@
   <form>
     <div id="sektioner"></div>
 
-    <!-- Långa Linbanan som vanlig sektion utan dropdown -->
+    <!-- Långa Linbanan -->
     <div class="section">
       <div class="section-header">
         <div>
@@ -155,6 +160,7 @@
 
       if (visaKommentar) {
         commentDiv.style.display = "block";
+
         if (!document.getElementById(fetchBtnId)) {
           const btn = document.createElement("button");
           btn.type = "button";
@@ -190,6 +196,7 @@
     function updateSummary(groupId) {
       const group = grupper[groupId];
       let godkand = 0, anmarkning = 0, avstangd = 0;
+
       group.forEach(namn => {
         const id = toId(namn);
         const radios = document.getElementsByName(id);
@@ -201,9 +208,9 @@
           }
         });
       });
-      const summary = `${godkand} godkända, ${anmarkning} anmärkning, ${avstangd} avstängd`;
+
       const el = document.getElementById("live-" + groupId);
-      if (el) el.innerText = summary;
+      if (el) el.innerText = `${godkand} godkända, ${anmarkning} anmärkning, ${avstangd} avstängd`;
     }
 
     function skapaBanaHTML(namn, groupId) {
@@ -228,16 +235,6 @@
         const res = await fetch(SHEETDB_API);
         const data = await res.json();
         const sorterat = data.sort((a, b) => new Date(b.datum) - new Date(a.datum));
-        const senasteDatum = sorterat[0]?.datum?.split(",")[0] ?? "–";
-
-        const datumRuta = document.createElement("div");
-        datumRuta.style.textAlign = "right";
-        datumRuta.style.margin = "0 0 0.5rem 0";
-        datumRuta.style.fontWeight = "bold";
-        datumRuta.innerText = `Senaste rapport: ${senasteDatum}`;
-        const sektioner = document.getElementById("sektioner");
-        sektioner.parentElement.insertBefore(datumRuta, sektioner);
-
         const senastePerBana = {};
         for (const rad of sorterat) {
           const banaId = rad.bana.toLowerCase().replace(/\s+/g, "_");
@@ -249,17 +246,14 @@
           }
         }
 
-        for (const [groupId, lista] of Object.entries(grupper)) {
-          let godkand = 0, anmarkning = 0, avstangd = 0;
-          lista.forEach(namn => {
-            const id = toId(namn);
-            const status = senastePerBana[id];
-            if (status === "godkänd" || status === "Fullt godkänd") godkand++;
-            else if (status === "anmärkning" || status === "Anmärkning") anmarkning++;
-            else if (status === "avstängd" || status === "Avstängd") avstangd++;
-          });
-          const el = document.getElementById("senaste-" + groupId);
-          if (el) el.innerText = `${godkand} godkända, ${anmarkning} anmärkning, ${avstangd} avstängd`;
+        for (const [banaId, status] of Object.entries(senastePerBana)) {
+          const container = document.querySelector(`[name='${banaId}']`)?.closest(".options");
+          if (container) {
+            const statusDiv = document.createElement("div");
+            statusDiv.className = "senaste-status";
+            statusDiv.innerText = `Senaste rapport: ${status}`;
+            container.parentElement.appendChild(statusDiv);
+          }
         }
 
       } catch (err) {
@@ -269,14 +263,16 @@
 
     document.addEventListener("DOMContentLoaded", () => {
       const sektioner = document.getElementById("sektioner");
+
       for (const [groupId, lista] of Object.entries(grupper)) {
-        if (groupId === "langa_linbanan") continue; // hanteras separat
+        if (groupId === "langa_linbanan") continue;
+
         const sektion = document.createElement("div");
         sektion.className = "section";
         sektion.innerHTML = `
           <div class="section-header" onclick="toggleSection(this)">
             <div>
-              <div>${groupId.replace("_", " ").replace("banor", "Banor").replace(/(^|\s)\S/g, l => l.toUpperCase())}</div>
+              <div>${groupId.replace("_", " ").replace("banor", "Banor").replace(/(^|\\s)\\S/g, l => l.toUpperCase())}</div>
               <div class="rubrik-status">
                 <span id="live-${groupId}">...</span>
                 <span id="senaste-${groupId}">...</span>
@@ -286,10 +282,12 @@
           <div class="section-content" id="content-${groupId}"></div>
         `;
         sektioner.appendChild(sektion);
-        const container = sektion.querySelector(`#content-${groupId}`);
+
+        const content = sektion.querySelector(`#content-${groupId}`);
         lista.forEach(namn => {
-          container.insertAdjacentHTML("beforeend", skapaBanaHTML(namn, groupId));
+          content.insertAdjacentHTML("beforeend", skapaBanaHTML(namn, groupId));
         });
+
         updateSummary(groupId);
       }
 
