@@ -117,6 +117,9 @@
     <div class="comment" id="comment-langa_linbanan">
       <textarea name="kommentar_langa_linbanan" placeholder="Kommentar om något är fel..."></textarea>
     </div>
+    
+    <button type="submit" style="margin-top: 2rem; padding: 1rem; font-size: 1rem;">Skicka in</button>
+    <p id="statusmeddelande" style="margin-top: 1rem; font-weight: bold;"></p>
 
   </form>
 
@@ -200,5 +203,49 @@
       }
     });
   </script>
+  
+  <script>
+  const formElement = document.querySelector("form");
+  const statusText = document.getElementById("statusmeddelande");
+
+  formElement.addEventListener("submit", function(e) {
+    e.preventDefault(); // Stoppar vanlig formulärskickning
+
+    const formData = new FormData(formElement);
+    const grupperadeData = {};
+
+    for (let [key, value] of formData.entries()) {
+      if (key.startsWith("kommentar_")) continue; // Vi lägger till kommentar separat
+
+      const kommentarKey = "kommentar_" + key;
+      const kommentar = formData.get(kommentarKey) || "";
+
+      grupperadeData[key] = {
+        status: value,
+        comment: kommentar
+      };
+    }
+
+    fetch("https://script.google.com/macros/s/AKfycbxIDE6D7DgThXOf87SRRlMv115f2Fo4zColw_4Xaq7bMJzzGK3VX3Puw1atQIVi4vnjeA/exec", {
+      method: "POST",
+      body: JSON.stringify(grupperadeData),
+      headers: {
+        "Content-Type": "application/json"
+      }
+    })
+    .then(res => res.text())
+    .then(res => {
+      statusText.innerText = "Formuläret har skickats!";
+      formElement.reset();
+      // Döljer alla kommentar-rutor efter reset
+      document.querySelectorAll(".comment").forEach(el => el.style.display = "none");
+    })
+    .catch(err => {
+      console.error("Fel vid skickning:", err);
+      statusText.innerText = "Något gick fel, försök igen.";
+    });
+  });
+</script>
+
 </body>
 </html>
