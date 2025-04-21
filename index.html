@@ -33,6 +33,11 @@
       cursor: pointer;
       user-select: none;
     }
+    .section-header span {
+      font-weight: normal;
+      font-size: 0.95em;
+      color: #333;
+    }
     .section-content {
       display: none;
       padding: 1rem;
@@ -73,39 +78,30 @@
   <h1>Daglig Kontroll – Höghöjdsbanor</h1>
   <form>
 
+    <!-- Sektioner för varje färg -->
     <div class="section">
-      <div class="section-header" onclick="toggleSection(this)">Gula Banor</div>
-      <div class="section-content">
-        <!-- Gul 1–6 + Gul Linbana -->
-      </div>
+      <div class="section-header" onclick="toggleSection(this)">Gula Banor <span id="summary-gula_banor"></span></div>
+      <div class="section-content" id="content-gula_banor"></div>
     </div>
 
     <div class="section">
-      <div class="section-header" onclick="toggleSection(this)">Gröna Banor</div>
-      <div class="section-content">
-        <!-- Grön 1–5 -->
-      </div>
+      <div class="section-header" onclick="toggleSection(this)">Gröna Banor <span id="summary-grona_banor"></span></div>
+      <div class="section-content" id="content-grona_banor"></div>
     </div>
 
     <div class="section">
-      <div class="section-header" onclick="toggleSection(this)">Blåa Banor</div>
-      <div class="section-content">
-        <!-- Blå 1–4 + Blå Linbana -->
-      </div>
+      <div class="section-header" onclick="toggleSection(this)">Blåa Banor <span id="summary-blaa_banor"></span></div>
+      <div class="section-content" id="content-blaa_banor"></div>
     </div>
 
     <div class="section">
-      <div class="section-header" onclick="toggleSection(this)">Röda Banor</div>
-      <div class="section-content">
-        <!-- Röd 1–4 -->
-      </div>
+      <div class="section-header" onclick="toggleSection(this)">Röda Banor <span id="summary-roda_banor"></span></div>
+      <div class="section-content" id="content-roda_banor"></div>
     </div>
 
     <div class="section">
-      <div class="section-header" onclick="toggleSection(this)">Svarta Banor</div>
-      <div class="section-content">
-        <!-- Svart 1, 13, 99 -->
-      </div>
+      <div class="section-header" onclick="toggleSection(this)">Svarta Banor <span id="summary-svarta_banor"></span></div>
+      <div class="section-content" id="content-svarta_banor"></div>
     </div>
 
     <!-- Långa Linbanan separat -->
@@ -125,16 +121,23 @@
   </form>
 
   <script>
-    const banor = {
-      "Gula Banor": ["Gul 1", "Gul 2", "Gul 3", "Gul 4", "Gul 5", "Gul 6", "Gul Linbana"],
-      "Gröna Banor": ["Grön 1", "Grön 2", "Grön 3", "Grön 4", "Grön 5"],
-      "Blåa Banor": ["Blå 1", "Blå 2", "Blå 3", "Blå 4", "Blå Linbana"],
-      "Röda Banor": ["Röd 1", "Röd 2", "Röd 3", "Röd 4"],
-      "Svarta Banor": ["Svart 1", "Svart 13", "Svart 99"]
+    const grupper = {
+      "gula_banor": ["Gul 1", "Gul 2", "Gul 3", "Gul 4", "Gul 5", "Gul 6", "Gul Linbana"],
+      "grona_banor": ["Grön 1", "Grön 2", "Grön 3", "Grön 4", "Grön 5"],
+      "blaa_banor": ["Blå 1", "Blå 2", "Blå 3", "Blå 4", "Blå Linbana"],
+      "roda_banor": ["Röd 1", "Röd 2", "Röd 3", "Röd 4"],
+      "svarta_banor": ["Svart 1", "Svart 13", "Svart 99"]
     };
 
     function toId(namn) {
-      return namn.toLowerCase().replace(/å/g, 'a').replace(/ä/g, 'a').replace(/ö/g, 'o').replace(/\s+/g, '_');
+      return namn.toLowerCase()
+        .replace(/å/g, 'a').replace(/ä/g, 'a').replace(/ö/g, 'o')
+        .replace(/\s+/g, '_');
+    }
+
+    function toggleSection(header) {
+      const content = header.nextElementSibling;
+      content.style.display = content.style.display === "block" ? "none" : "block";
     }
 
     function toggleComment(id) {
@@ -149,35 +152,51 @@
       comment.style.display = "none";
     }
 
-    function toggleSection(header) {
-      const content = header.nextElementSibling;
-      content.style.display = content.style.display === "block" ? "none" : "block";
+    function updateSummary(groupId) {
+      const group = grupper[groupId];
+      let godkand = 0, anmarkning = 0, avstangd = 0;
+
+      group.forEach(namn => {
+        const id = toId(namn);
+        const radios = document.getElementsByName(id);
+        radios.forEach(r => {
+          if (r.checked) {
+            if (r.value === "godkänd") godkand++;
+            else if (r.value === "anmärkning") anmarkning++;
+            else if (r.value === "avstängd") avstangd++;
+          }
+        });
+      });
+
+      const summary = `– ${godkand} godkända, ${anmarkning} anmärkning, ${avstangd} avstängd`;
+      document.getElementById("summary-" + groupId).innerText = summary;
     }
 
-    // Skapa rader automatiskt
+    function skapaBanaHTML(namn, groupId) {
+      const id = toId(namn);
+      return `
+        <div class="row">
+          <div class="label">${namn}</div>
+          <div class="options">
+            <label><input type="radio" name="${id}" value="godkänd" checked onchange="toggleComment('${id}'); updateSummary('${groupId}')"> Fullt godkänd</label>
+            <label><input type="radio" name="${id}" value="anmärkning" onchange="toggleComment('${id}'); updateSummary('${groupId}')"> Anmärkning</label>
+            <label><input type="radio" name="${id}" value="avstängd" onchange="toggleComment('${id}'); updateSummary('${groupId}')"> Avstängd</label>
+          </div>
+        </div>
+        <div class="comment" id="comment-${id}">
+          <textarea name="kommentar_${id}" placeholder="Kommentar om något är fel..."></textarea>
+        </div>
+      `;
+    }
+
+    // Generera formulärinnehåll automatiskt
     document.addEventListener("DOMContentLoaded", () => {
-      const sections = document.querySelectorAll(".section");
-      let i = 0;
-      for (const [grupp, lista] of Object.entries(banor)) {
-        const content = sections[i].querySelector(".section-content");
+      for (const [groupId, lista] of Object.entries(grupper)) {
+        const container = document.getElementById("content-" + groupId);
         lista.forEach(namn => {
-          const id = toId(namn);
-          const html = `
-            <div class="row">
-              <div class="label">${namn}</div>
-              <div class="options">
-                <label><input type="radio" name="${id}" value="godkänd" checked onchange="toggleComment('${id}')"> Fullt godkänd</label>
-                <label><input type="radio" name="${id}" value="anmärkning" onchange="toggleComment('${id}')"> Anmärkning</label>
-                <label><input type="radio" name="${id}" value="avstängd" onchange="toggleComment('${id}')"> Avstängd</label>
-              </div>
-            </div>
-            <div class="comment" id="comment-${id}">
-              <textarea name="kommentar_${id}" placeholder="Kommentar om något är fel..."></textarea>
-            </div>
-          `;
-          content.insertAdjacentHTML("beforeend", html);
+          container.insertAdjacentHTML("beforeend", skapaBanaHTML(namn, groupId));
         });
-        i++;
+        updateSummary(groupId);
       }
     });
   </script>
