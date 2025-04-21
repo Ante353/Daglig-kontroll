@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Daglig Kontroll – Höghöjdsbanor</title>
 
-  <!-- Google Fonts: Quicksand -->
+  <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600&display=swap" rel="stylesheet">
 
   <style>
@@ -49,6 +49,16 @@
       font-weight: bold;
       cursor: pointer;
       user-select: none;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .section-summary {
+      font-weight: normal;
+      font-size: 0.9rem;
+      color: #333;
     }
 
     .section-content {
@@ -91,7 +101,6 @@
       border: 1px solid #ccc;
     }
 
-    /* Knappar */
     button[type="submit"],
     button[type="button"] {
       background-color: #f6f5ee;
@@ -125,7 +134,6 @@
 </head>
 <body>
 
-  <!-- Logotyp -->
   <img src="logga.png" alt="Logotyp" class="logo-top" />
 
   <h1>Daglig Kontroll – Höghöjdsbanor</h1>
@@ -150,6 +158,7 @@
 
     const SHEETDB_API = "https://sheetdb.io/api/v1/0m6qr0irhuaa0";
     const senasteKommentarer = {};
+    const senasteStatus = {};
     const idag = new Date().toISOString().split("T")[0];
     let dagensData = [];
     let redigerar = false;
@@ -189,6 +198,11 @@
           }
         });
       });
+
+      const liveText = `${godkand} godkända, ${anmarkning} anmärkning, ${avstangd} avstängd`;
+      const senasteText = senasteStatus[groupId] ?? "";
+      document.getElementById(`summary-${groupId}`).innerHTML =
+        `<span>${liveText}</span><span>Senast: ${senasteText}</span>`;
     }
 
     function skapaBanaHTML(namn, groupId) {
@@ -214,9 +228,14 @@
       const senastePerBana = {};
       for (const rad of data) {
         const banaId = rad.bana?.toLowerCase().replace(/\s+/g, "_");
-        if (!senastePerBana[banaId]) senastePerBana[banaId] = rad.status;
-        if (!senasteKommentarer[banaId] && rad.kommentar) senasteKommentarer[banaId] = rad.kommentar;
+        if (!senastePerBana[banaId]) {
+          senastePerBana[banaId] = rad.status;
+        }
+        if (!senasteKommentarer[banaId] && rad.kommentar) {
+          senasteKommentarer[banaId] = rad.kommentar;
+        }
       }
+
       for (const [banaId, status] of Object.entries(senastePerBana)) {
         const container = document.querySelector(`[name='${banaId}']`)?.closest(".options");
         if (container) {
@@ -226,92 +245,30 @@
           container.parentElement.appendChild(statusDiv);
         }
       }
-    }
 
-    async function kontrolleraOmRedanSkickat() {
-      const res = await fetch(SHEETDB_API);
-      const data = await res.json();
-      dagensData = data.filter(row => row.datum?.startsWith(idag));
-      if (dagensData.length > 0) {
-        document.getElementById("submit-button").style.display = "none";
-        document.getElementById("edit-button").style.display = "inline-block";
-        document.getElementById("statusmeddelande").innerText = "En rapport är redan inskickad idag.";
-      }
-    }
-
-    document.getElementById("edit-button").addEventListener("click", () => {
-      dagensData.forEach(row => {
-        const banaId = row.bana?.toLowerCase().replace(/\s+/g, "_");
-        const radios = document.getElementsByName(banaId);
-        const kommentarFält = document.querySelector(`[name='kommentar_${banaId}']`);
-        if (radios) {
-          radios.forEach(r => {
-            if (r.value === row.status) r.checked = true;
-          });
-        }
-        if (kommentarFält) {
-          kommentarFält.value = row.kommentar || "";
-          document.getElementById("comment-" + banaId).style.display = "block";
-        }
-      });
-      redigerar = true;
-      document.getElementById("submit-button").style.display = "inline-block";
-      document.getElementById("edit-button").style.display = "none";
-      document.getElementById("statusmeddelande").innerText = "Du redigerar dagens rapport – klicka på 'Skicka in' för att spara ändringar.";
-    });
-
-    document.getElementById("kontroll-form").addEventListener("submit", async function (e) {
-      e.preventDefault();
-      const formData = new FormData(this);
-      const grupperadeData = {};
-
-      for (let [key, value] of formData.entries()) {
-        if (key.startsWith("kommentar_")) continue;
-        const kommentarKey = "kommentar_" + key;
-        const kommentar = formData.get(kommentarKey) || "";
-        grupperadeData[key] = {
-          status: value,
-          comment: kommentar
-        };
-      }
-
-      const nyData = Object.entries(grupperadeData).map(([bana, info]) => ({
-        datum: idag,
-        bana: bana,
-        status: info.status,
-        kommentar: info.comment
-      }));
-
-      try {
-        await fetch(`${SHEETDB_API}?force_update=true&conflict_column=datum,bana`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({ data: nyData })
+      for (const [groupId, banor] of Object.entries(grupper)) {
+        let g = 0, a = 0, av = 0;
+        banor.forEach(namn => {
+          const id = toId(namn);
+          const status = senastePerBana[id];
+          if (status === "godkänd" || status === "Fullt godkänd") g++;
+          else if (status === "anmärkning" || status === "Anmärkning") a++;
+          else if (status === "avstängd" || status === "Avstängd") av++;
         });
-
-        document.getElementById("statusmeddelande").innerText = redigerar
-          ? "Rapporten har uppdaterats!"
-          : "Formuläret har skickats!";
-        this.reset();
-        document.querySelectorAll(".comment").forEach(el => el.style.display = "none");
-        redigerar = false;
-
-      } catch (err) {
-        console.error("Fel vid skickning:", err);
-        document.getElementById("statusmeddelande").innerText = "Något gick fel, försök igen.";
+        senasteStatus[groupId] = `${g} godkända, ${a} anmärkning, ${av} avstängd`;
+        updateSummary(groupId);
       }
-    });
+    }
 
-    document.addEventListener("DOMContentLoaded", async () => {
+    document.addEventListener("DOMContentLoaded", () => {
       const sektioner = document.getElementById("sektioner");
       for (const [groupId, lista] of Object.entries(grupper)) {
         const sektion = document.createElement("div");
         sektion.className = "section";
         sektion.innerHTML = `
           <div class="section-header" onclick="toggleSection(this)">
-            ${groupId.replace("_", " ").replace("banor", "Banor").replace(/(^|\\s)\\S/g, l => l.toUpperCase())}
+            <div>${groupId.replace("_", " ").replace("banor", "Banor").replace(/(^|\\s)\\S/g, l => l.toUpperCase())}</div>
+            <div class="section-summary" id="summary-${groupId}"></div>
           </div>
           <div class="section-content" id="content-${groupId}"></div>
         `;
@@ -323,10 +280,8 @@
         updateSummary(groupId);
       }
 
-      await visaSenasteStatus();
-      await kontrolleraOmRedanSkickat();
+      visaSenasteStatus();
     });
   </script>
-
 </body>
 </html>
