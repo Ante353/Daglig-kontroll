@@ -43,17 +43,15 @@
       text-decoration: none;
       background-color: #f6f5ee;
       color: #000000;
-      padding: 1.5rem;
+      padding: 1.2rem;
       font-size: 1.5rem;
       border: 2px solid #000000;
       border-radius: 0;
       transition: background-color 0.2s, color 0.2s;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
+      display: inline-block;
       min-width: 220px;
-      min-height: 120px; /* 🔒 Fixerar höjden */
+      min-height: 95px; /* ⬅️ Tillräcklig höjd för båda rader utan att se klumpig ut */
+      box-sizing: border-box;
     }
 
     .menu a:hover {
@@ -65,7 +63,7 @@
       display: block;
       font-size: 0.8rem;
       font-weight: bold;
-      margin-top: 0.5rem;
+      margin-top: 0.4rem;
     }
 
     .status-green {
@@ -84,12 +82,12 @@
   <div class="menu">
     <div class="menu-item">
       <a href="daglig-kontroll.html">
-        📋 Daglig kontroll
+         Daglig kontroll
         <span id="kontroll-status" class="status-inline">Laddar...</span>
       </a>
     </div>
     <div class="menu-item">
-      <a href="incidentrapport.html">⚠️ Incidentrapport</a>
+      <a href="incidentrapport.html"> Incidentrapport</a>
     </div>
   </div>
 
