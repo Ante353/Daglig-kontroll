@@ -138,29 +138,39 @@
       });
 
       if (visaKommentar) {
-        commentDiv.style.display = "block";
-        if (!document.getElementById(fetchBtnId)) {
-          const btn = document.createElement("button");
-          btn.type = "button";
-          btn.id = fetchBtnId;
-          btn.innerText = "Hämta senaste kommentar";
-          btn.style.marginTop = "0.5rem";
-          btn.style.padding = "0.4rem";
-          btn.style.fontSize = "0.9rem";
-          btn.addEventListener("click", () => {
-            const kommentar = senasteKommentarer[id];
-            if (kommentar) {
-              commentField.value = kommentar;
-            } else {
-              alert("Ingen kommentar hittades från senaste rapport.");
-            }
-          });
-          commentDiv.appendChild(btn);
-        }
+  commentDiv.style.display = "block";
+
+  if (!document.getElementById(fetchBtnId)) {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.id = fetchBtnId;
+    btn.innerText = "📋";
+    btn.title = "Hämta tidigare kommentar";
+    btn.style.marginLeft = "0.5rem";
+    btn.style.padding = "0.3rem 0.6rem";
+    btn.style.fontSize = "1.2rem";
+    btn.style.verticalAlign = "top";
+    btn.style.cursor = "pointer";
+    btn.style.background = "#eee";
+    btn.style.border = "1px solid #ccc";
+    btn.style.borderRadius = "4px";
+
+    btn.addEventListener("click", () => {
+      const kommentar = senasteKommentarer[id];
+      if (kommentar) {
+        commentField.value = kommentar;
       } else {
-        commentDiv.style.display = "none";
+        alert("Ingen kommentar hittades från senaste rapport.");
       }
-    }
+    });
+
+    // Lägg knappen direkt efter textfältet
+    commentField.parentElement.insertBefore(btn, commentField.nextSibling);
+  }
+
+} else {
+  commentDiv.style.display = "none";
+}
 
     function updateSummary(groupId) {
       const group = grupper[groupId];
