@@ -263,12 +263,22 @@
       const res = await fetch(SHEETDB_API);
       const data = await res.json();
 
-      // Sortera nyast först
       const sorterat = data.sort((a, b) => new Date(b.datum) - new Date(a.datum));
+      const senasteDatum = sorterat[0]?.datum?.split(",")[0] ?? "–";
 
-      // Spara senaste per bana
+      // Skapa ruta med endast datum
+      const datumRuta = document.createElement("div");
+      datumRuta.style.textAlign = "right";
+      datumRuta.style.marginBottom = "0.5rem";
+      datumRuta.style.fontWeight = "bold";
+      datumRuta.innerText = `Senaste rapport: ${senasteDatum}`;
+
+      // Placera den ovanför "Gula Banor"-sektionen
+      const gulaSektion = document.querySelector(".section-header");
+      gulaSektion.parentElement.insertBefore(datumRuta, gulaSektion);
+
+      // Visa under varje bana (fortfarande bara Gul 1 och Grön 3)
       const senastePerBana = {};
-
       for (const rad of sorterat) {
         const banaId = rad.bana.toLowerCase().replace(/\s+/g, "_");
         if (banorMedStatus.includes(banaId) && !senastePerBana[banaId]) {
@@ -276,9 +286,7 @@
         }
       }
 
-      // Visa under respektive bana
       for (const [banaId, status] of Object.entries(senastePerBana)) {
-        const text = `Senast inskickat: ${status}`;
         const container = document.querySelector(`[name='${banaId}']`)?.closest(".options");
         if (container) {
           const statusDiv = document.createElement("div");
@@ -286,27 +294,10 @@
           statusDiv.style.fontSize = "0.9em";
           statusDiv.style.color = "#555";
           statusDiv.style.marginTop = "0.3rem";
-          statusDiv.innerText = text;
+          statusDiv.innerText = `Senast inskickat: ${status}`;
           container.parentElement.appendChild(statusDiv);
         }
       }
-
-      // Visa sammanfattning i toppen
-      const senastDatum = sorterat[0]?.datum?.split(",")[0] ?? "";
-      let topSummary = `<strong>Senaste rapport: ${senastDatum}</strong><br>`;
-      for (const bana of banorMedStatus) {
-        const namn = bana.replace("_", " ").replace("gron", "Grön").replace("gul", "Gul");
-        const status = senastePerBana[bana] ?? "Ingen data";
-        topSummary += `${namn}: ${status}<br>`;
-      }
-
-      const rubrik = document.querySelector("h1");
-      const infoBox = document.createElement("div");
-      infoBox.style.textAlign = "center";
-      infoBox.style.marginTop = "0.5rem";
-      infoBox.style.fontSize = "1rem";
-      infoBox.innerHTML = topSummary;
-      rubrik.insertAdjacentElement("afterend", infoBox);
 
     } catch (err) {
       console.error("Kunde inte hämta senaste status:", err);
@@ -315,6 +306,7 @@
 
   document.addEventListener("DOMContentLoaded", visaSenasteStatus);
 </script>
+
 
 
 </body>
