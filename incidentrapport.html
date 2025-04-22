@@ -50,6 +50,8 @@
     textarea {
       resize: vertical;
       min-height: 100px;
+      overflow-wrap: break-word;
+      white-space: pre-wrap;
     }
 
     .button-row {
@@ -72,6 +74,22 @@
     .button-row button:hover {
       background-color: #000;
       color: #fff;
+    }
+
+    .hidden-clone {
+      position: absolute;
+      top: -9999px;
+      left: -9999px;
+      visibility: hidden;
+    }
+
+    .output-text {
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      border: 1px solid #ccc;
+      padding: 0.6rem;
+      border-radius: 4px;
+      min-height: 100px;
     }
   </style>
 </head>
@@ -112,7 +130,6 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script>
-    // Fyll i dagens datum som default
     document.addEventListener("DOMContentLoaded", () => {
       const idag = new Date().toISOString().split("T")[0];
       document.getElementById("datum").value = idag;
@@ -120,14 +137,35 @@
 
     function sparaSomPNG() {
       const knappar = document.getElementById("knappar");
-      knappar.style.display = "none"; // Dölj knappar
+      knappar.style.display = "none";
 
-      html2canvas(document.getElementById("rapport")).then(canvas => {
+      const rapport = document.getElementById("rapport");
+
+      // Skapa en klon av rapporten där vi byter ut textareas mot divar
+      const clone = rapport.cloneNode(true);
+      clone.id = "rapport-klon";
+      clone.classList.add("hidden-clone");
+
+      // Ersätt varje <textarea> med motsvarande <div> med textinnehåll
+      const textareas = rapport.querySelectorAll("textarea");
+      const cloneTextareas = clone.querySelectorAll("textarea");
+
+      textareas.forEach((ta, i) => {
+        const div = document.createElement("div");
+        div.className = "output-text";
+        div.innerText = ta.value || "";
+        cloneTextareas[i].parentNode.replaceChild(div, cloneTextareas[i]);
+      });
+
+      document.body.appendChild(clone);
+
+      html2canvas(clone).then(canvas => {
         const link = document.createElement("a");
         link.download = `incidentrapport_${new Date().toLocaleDateString("sv-SE")}.png`;
         link.href = canvas.toDataURL("image/png");
         link.click();
-        knappar.style.display = "block"; // Visa knappar igen
+        document.body.removeChild(clone);
+        knappar.style.display = "block";
       });
     }
 
