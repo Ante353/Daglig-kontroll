@@ -23,14 +23,21 @@
       position: relative;
     }
 
-    .logo {
-      max-width: 120px;
-      margin-bottom: 1rem;
-    }
-
-    h1 {
+    .header {
       text-align: center;
       margin-bottom: 2rem;
+    }
+
+    .header img {
+      width: 60px;
+      vertical-align: middle;
+      margin-right: 1rem;
+    }
+
+    .header h1 {
+      display: inline-block;
+      vertical-align: middle;
+      margin: 0;
     }
 
     label {
@@ -80,22 +87,44 @@
       background-color: #000;
       color: #fff;
     }
+
+    /* För utskriftsklon */
+    .hidden-clone {
+      display: none;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+
+    .clone-label {
+      font-weight: bold;
+      margin-top: 1rem;
+    }
+
+    .clone-block {
+      margin-top: 0.2rem;
+      padding: 0.6rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      background: #fefefe;
+    }
   </style>
 </head>
 <body>
 
   <div class="container" id="rapport">
-    <img src="logga.png" alt="Logotyp" class="logo" />
-    <h1>Incidentrapport</h1>
+    <div class="header">
+      <img src="logga.png" alt="Logga">
+      <h1>Incidentrapport</h1>
+    </div>
 
     <label for="typ">Typ av incident:</label>
-    <select id="typ" name="typ">
+    <select id="typ">
       <option>Gäst</option>
       <option>Personal</option>
     </select>
 
     <label for="datum">Datum:</label>
-    <input type="date" id="datum" name="datum" />
+    <input type="date" id="datum" />
 
     <label for="vem">Vem:</label>
     <input type="text" id="vem" placeholder="Kvinna 28 år / Andreas, Man 26 år">
@@ -120,30 +149,40 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script>
+    // Fyll i dagens datum som förval
     document.addEventListener("DOMContentLoaded", () => {
       const idag = new Date().toISOString().split("T")[0];
       document.getElementById("datum").value = idag;
     });
 
     function sparaSomPNG() {
+      const container = document.getElementById("rapport");
       const knappar = document.getElementById("knappar");
+
+      // Skapa klon med värden ifyllda som text
+      const clone = container.cloneNode(true);
+      clone.id = "rapport-klon";
+      clone.classList.add("hidden-clone");
+
+      clone.querySelectorAll("input, select, textarea").forEach(elem => {
+        const label = elem.previousElementSibling ? elem.previousElementSibling.textContent : '';
+        const div = document.createElement("div");
+        div.className = "clone-block";
+        div.innerHTML = `<div class="clone-label">${label}</div><div>${elem.value || elem.innerText}</div>`;
+        elem.replaceWith(div);
+      });
+
+      document.body.appendChild(clone);
+
       knappar.style.display = "none";
 
-      const rapportElement = document.getElementById("rapport");
-
-      html2canvas(rapportElement, {
-        useCORS: true,
-        scale: 2,
-        windowWidth: document.body.scrollWidth
-      }).then(canvas => {
+      html2canvas(clone).then(canvas => {
         const link = document.createElement("a");
         link.download = `incidentrapport_${new Date().toLocaleDateString("sv-SE")}.png`;
         link.href = canvas.toDataURL("image/png");
         link.click();
         knappar.style.display = "block";
-      }).catch(err => {
-        alert("Fel vid export: " + err);
-        knappar.style.display = "block";
+        document.body.removeChild(clone);
       });
     }
 
@@ -151,6 +190,5 @@
       alert("Funktion för att skicka via mail kommer senare.");
     }
   </script>
-
 </body>
 </html>
