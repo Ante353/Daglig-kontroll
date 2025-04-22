@@ -427,18 +427,26 @@ document.getElementById("kontroll-form").addEventListener("submit", async functi
     return;
   }
 
+  const datumIdag = new Date().toLocaleDateString("sv-SE");
+
+  const banorData = Object.entries(grupperadeData).map(([bana, info]) => ({
+    datum: datumIdag,
+    bana: bana,
+    status: info.status,
+    kommentar: info.comment
+  }));
+
+  const personalRad = {
+    datum: datumIdag,
+    personal: valdaPersonal
+  };
+
   try {
     const res = await fetch("https://sheetdb.io/api/v1/0m6qr0irhuaa0", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        data: Object.entries(grupperadeData).map(([bana, info]) => ({
-          datum: new Date().toLocaleDateString("sv-SE"),
-          bana: bana,
-          status: info.status,
-          kommentar: info.comment,
-          personal: valdaPersonal
-        }))
+        data: [...banorData, personalRad]
       })
     });
 
@@ -453,6 +461,7 @@ document.getElementById("kontroll-form").addEventListener("submit", async functi
     document.getElementById("statusmeddelande").innerText = "Något gick fel, försök igen.";
   }
 });
+
 
   </script>
 </body>
