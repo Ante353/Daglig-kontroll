@@ -96,33 +96,33 @@
     }
 
     .comment {
-  display: none;
-  margin-top: 0.3rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
+      display: none;
+      margin-top: 0.3rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
 
     textarea {
-  flex: 1;
-  padding: 0.5rem;
-  font-size: 1rem;
-  border-radius: 5px;
-  border: 1px solid #ccc;
-}
+      flex: 1;
+      padding: 0.5rem;
+      font-size: 1rem;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
 
     .fetch-btn {
-  height: 38px;
-  padding: 0.2rem 0.5rem;
-  font-size: 1rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid #ccc;
-  background: #eee;
-  cursor: pointer;
-  border-radius: 4px;
-}
+      height: 38px;
+      padding: 0.2rem 0.5rem;
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid #ccc;
+      background: #eee;
+      cursor: pointer;
+      border-radius: 4px;
+    }
 
     button[type="submit"],
     button[type="button"] {
@@ -172,9 +172,9 @@
   <script>
     const grupper = {
       "gula_banor": ["Gul 1", "Gul 2", "Gul 3", "Gul 4", "Gul 5", "Gul 6", "Gul Linbana"],
-      "gröna_banor": ["Grön 1", "Grön 2", "Grön 3", "Grön 4", "Grön 5"],
-      "blåa_banor": ["Blå 1", "Blå 2", "Blå 3", "Blå 4", "Blå Linbana"],
-      "röda_banor": ["Röd 1", "Röd 2", "Röd 3", "Röd 4"],
+      "grona_banor": ["Grön 1", "Grön 2", "Grön 3", "Grön 4", "Grön 5"],
+      "blaa_banor": ["Blå 1", "Blå 2", "Blå 3", "Blå 4", "Blå Linbana"],
+      "roda_banor": ["Röd 1", "Röd 2", "Röd 3", "Röd 4"],
       "svarta_banor": ["Svart 1", "Svart 13", "Svart 99"],
       "ovrigt": ["Långa Linbanan"]
     };
@@ -195,38 +195,41 @@
 
     function toggleComment(id) {
       const radios = document.getElementsByName(id);
-      const comment = document.getElementById("comment-" + id);
+      const commentDiv = document.getElementById("comment-" + id);
+      const commentField = commentDiv.querySelector("textarea");
+      const fetchBtnId = `fetch-btn-${id}`;
+
+      let visaKommentar = false;
       for (const r of radios) {
         if (r.checked && (r.value === "anmärkning" || r.value === "avstängd")) {
-          comment.style.display = "block";
-
-          const fetchBtnId = `fetch-btn-${id}`;
-          const commentField = comment.querySelector("textarea");
-
-          if (!document.getElementById(fetchBtnId)) {
-            const btn = document.createElement("button");
-            btn.type = "button";
-            btn.id = fetchBtnId;
-            btn.innerText = "📋";
-            btn.title = "Hämta tidigare kommentar";
-            btn.className = "fetch-btn";
-
-            btn.addEventListener("click", () => {
-              const kommentar = senasteKommentarer[id];
-              if (kommentar) {
-                commentField.value = kommentar;
-              } else {
-                alert("Ingen tidigare kommentar hittades.");
-              }
-            });
-
-            comment.appendChild(btn);
-          }
-
-          return;
+          visaKommentar = true;
         }
       }
-      comment.style.display = "none";
+
+      if (visaKommentar) {
+        commentDiv.style.display = "flex";
+        if (!document.getElementById(fetchBtnId)) {
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.id = fetchBtnId;
+          btn.innerText = "📋";
+          btn.title = "Hämta tidigare kommentar";
+          btn.className = "fetch-btn";
+
+          btn.addEventListener("click", () => {
+            const kommentar = senasteKommentarer[id];
+            if (kommentar) {
+              commentField.value = kommentar;
+            } else {
+              alert("Ingen tidigare kommentar hittades.");
+            }
+          });
+
+          commentDiv.appendChild(btn);
+        }
+      } else {
+        commentDiv.style.display = "none";
+      }
     }
 
     function updateSummary(groupId) {
