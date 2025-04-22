@@ -44,7 +44,6 @@
       background: #eee;
       padding: 1rem;
       font-weight: bold;
-      cursor: pointer;
       user-select: none;
       display: flex;
       justify-content: space-between;
@@ -122,14 +121,9 @@
       border-radius: 4px;
     }
 
-    .senaste-status {
-      font-size: 0.9em;
-      margin-top: 0.3rem;
-    }
-
-    .senaste-status.green { color: green; }
-    .senaste-status.yellow { color: goldenrod; }
-    .senaste-status.red { color: red; }
+    .green { color: green; }
+    .yellow { color: goldenrod; }
+    .red { color: red; }
 
     button {
       background-color: #f6f5ee;
@@ -139,13 +133,19 @@
       padding: 1rem 2rem;
       font-size: 1rem;
       cursor: pointer;
-      margin-top: 1.5rem;
+      margin-top: 1rem;
+      margin-right: 1rem;
       transition: background-color 0.2s, color 0.2s;
     }
 
     button:hover {
       background-color: #000;
       color: #fff;
+    }
+
+    #statusmeddelande {
+      margin-top: 1rem;
+      font-weight: bold;
     }
 
     #personal-popup {
@@ -162,17 +162,15 @@
       overflow-y: auto;
     }
 
-    #statusmeddelande {
-      margin-top: 1rem;
-      font-weight: bold;
-    }
-
-    .top-buttons {
+    .popup-actions {
       display: flex;
-      justify-content: space-between;
+      justify-content: flex-end;
       gap: 1rem;
       margin-top: 1rem;
-      flex-wrap: wrap;
+    }
+
+    .always-open {
+      display: block !important;
     }
   </style>
 </head>
@@ -188,9 +186,9 @@
   <div id="senaste-datum" style="text-align: right; font-weight: bold; margin-bottom: 1rem;"></div>
   <div id="sektioner"></div>
 
-  <div class="top-buttons">
+  <div style="text-align: center;">
     <button type="button" id="open-personal-popup">👥 Välj personal</button>
-    <button type="button" id="kopiera-senaste">📋 Kopiera senaste</button>
+    <button type="button" id="kopiera-senaste" style="float: right;">📄 Kopiera senaste rapport</button>
   </div>
 
   <button id="edit-button" type="button" style="display:none;">Redigera dagens rapport</button>
@@ -201,7 +199,7 @@
   <h3>Välj dagens personal</h3>
   <form id="personal-form" onsubmit="skickaForm(event)">
     <div id="personal-list" style="text-align: left;"></div>
-    <div style="text-align: right; margin-top: 1rem;">
+    <div class="popup-actions">
       <button type="submit">Skicka in</button>
     </div>
   </form>
@@ -224,12 +222,7 @@ const senasteStatus = {};
 const idag = new Date().toISOString().split("T")[0];
 
 function toId(namn) {
-  return namn.toLowerCase().replace(/å/g,'a').replace(/ä/g,'a').replace(/ö/g,'o').replace(/\s+/g,'_');
-}
-
-function toggleSection(header) {
-  const content = header.nextElementSibling;
-  content.style.display = content.style.display === "block" ? "none" : "block";
+  return namn.toLowerCase().replace(/å/g, 'a').replace(/ä/g, 'a').replace(/ö/g, 'o').replace(/\s+/g, '_');
 }
 
 function toggleComment(id) {
@@ -237,26 +230,30 @@ function toggleComment(id) {
   const commentDiv = document.getElementById("comment-" + id);
   const commentField = commentDiv.querySelector("textarea");
   const fetchBtnId = `fetch-btn-${id}`;
-  let visa = false;
+  let visaKommentar = false;
+
   radios.forEach(r => {
-    if (r.checked && (r.value === "anmärkning" || r.value === "avstängd")) visa = true;
+    if (r.checked && (r.value === "anmärkning" || r.value === "avstängd")) visaKommentar = true;
   });
 
-  commentDiv.style.display = visa ? "flex" : "none";
-
-  if (visa && !document.getElementById(fetchBtnId)) {
-    const btn = document.createElement("button");
-    btn.type = "button";
-    btn.id = fetchBtnId;
-    btn.innerText = "📋";
-    btn.title = "Hämta tidigare kommentar";
-    btn.className = "fetch-btn";
-    btn.addEventListener("click", () => {
-      const kommentar = senasteKommentarer[id];
-      if (kommentar) commentField.value = kommentar;
-      else alert("Ingen tidigare kommentar hittades.");
-    });
-    commentDiv.appendChild(btn);
+  if (visaKommentar) {
+    commentDiv.style.display = "flex";
+    if (!document.getElementById(fetchBtnId)) {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.id = fetchBtnId;
+      btn.innerText = "📋";
+      btn.title = "Hämta tidigare kommentar";
+      btn.className = "fetch-btn";
+      btn.onclick = () => {
+        const kommentar = senasteKommentarer[id];
+        if (kommentar) commentField.value = kommentar;
+        else alert("Ingen tidigare kommentar hittades.");
+      };
+      commentDiv.appendChild(btn);
+    }
+  } else {
+    commentDiv.style.display = "none";
   }
 }
 
@@ -274,8 +271,9 @@ function updateSummary(groupId) {
       }
     });
   });
+
   const liveText = `${g} godkända, ${a} anmärkning, ${av} avstängd`;
-  const senasteText = senasteStatus[groupId] || "";
+  const senasteText = senasteStatus[groupId] ?? "";
   document.getElementById(`summary-${groupId}`).innerHTML =
     `<span>${liveText}</span><span>Senast: ${senasteText}</span>`;
 }
@@ -293,154 +291,157 @@ function skapaBanaHTML(namn, groupId) {
     </div>
     <div class="comment" id="comment-${id}">
       <textarea name="kommentar_${id}" placeholder="Kommentar om något är fel..."></textarea>
-    </div>
-  `;
+    </div>`;
 }
 
 async function visaSenasteStatus() {
   const res = await fetch(SHEETDB_API);
   const data = await res.json();
-  const senaste = data.filter(r => r.bana).sort((a, b) => new Date(b.datum) - new Date(a.datum));
-  const senastePerBana = {};
+  const senaste = data[data.length - 1];
 
-  senaste.forEach(row => {
-    const id = row.bana?.toLowerCase().replace(/\s+/g, "_");
-    if (!senastePerBana[id]) {
-      senastePerBana[id] = row.status;
-      senasteKommentarer[id] = row.kommentar;
+  for (const key in senaste) {
+    if (key.endsWith("_status")) {
+      const id = key.replace("_status", "");
+      const status = senaste[key];
+      senasteStatus[getGroupId(id)] ||= "";
+      if (status === "godkänd" || status === "Fullt godkänd") senasteStatus[getGroupId(id)] += "✔️ ";
+      else if (status === "anmärkning") senasteStatus[getGroupId(id)] += "⚠️ ";
+      else if (status === "avstängd") senasteStatus[getGroupId(id)] += "⛔ ";
+
+      const container = document.querySelector(`[name='${id}']`)?.closest(".options");
+      if (container) {
+        const div = document.createElement("div");
+        div.className = `senaste-status ${status === "godkänd" ? "green" : status === "anmärkning" ? "yellow" : "red"}`;
+        div.innerText = `Senaste rapport: ${status}`;
+        container.parentElement.appendChild(div);
+      }
     }
-  });
 
-  for (const [id, status] of Object.entries(senastePerBana)) {
-    const container = document.querySelector(`[name='${id}']`)?.closest(".options");
-    if (container) {
-      const div = document.createElement("div");
-      div.className = "senaste-status";
-      if (status === "godkänd" || status === "Fullt godkänd") div.classList.add("green");
-      else if (status === "anmärkning") div.classList.add("yellow");
-      else if (status === "avstängd") div.classList.add("red");
-      div.innerText = `Senaste rapport: ${status}`;
-      container.parentElement.appendChild(div);
+    if (key.endsWith("_kommentar")) {
+      const id = key.replace("_kommentar", "");
+      senasteKommentarer[id] = senaste[key];
     }
   }
 
-  for (const [groupId, lista] of Object.entries(grupper)) {
-    let g = 0, a = 0, av = 0;
-    lista.forEach(namn => {
-      const id = toId(namn);
-      const s = senastePerBana[id];
-      if (s === "godkänd" || s === "Fullt godkänd") g++;
-      else if (s === "anmärkning") a++;
-      else if (s === "avstängd") av++;
-    });
-    senasteStatus[groupId] = `${g} godkända, ${a} anmärkning, ${av} avstängd`;
-    updateSummary(groupId);
-  }
+  Object.keys(grupper).forEach(updateSummary);
 
-  const senasteDatum = data.map(r => r.datum).filter(Boolean).sort().reverse()[0];
-  if (senasteDatum) {
-    document.getElementById("senaste-datum").innerText = `Senaste rapport: ${senasteDatum}`;
+  if (senaste?.datum) {
+    document.getElementById("senaste-datum").innerText = `Senaste rapport: ${senaste.datum}`;
   }
 }
 
-document.getElementById("kopiera-senaste").addEventListener("click", async () => {
-  const res = await fetch(SHEETDB_API);
-  const data = await res.json();
-  const senaste = data.filter(r => r.bana).sort((a, b) => new Date(b.datum) - new Date(a.datum));
-  const senastePerBana = {};
-  const senasteKommentarer = {};
-
-  for (const rad of senaste) {
-    const id = toId(rad.bana);
-    if (!senastePerBana[id]) {
-      senastePerBana[id] = rad.status;
-      senasteKommentarer[id] = rad.kommentar || "";
-    }
-  }
-
-  for (const [id, status] of Object.entries(senastePerBana)) {
-    const radios = document.getElementsByName(id);
-    radios.forEach(r => r.checked = r.value === status);
-    const commentField = document.querySelector(`[name="kommentar_${id}"]`);
-    if (commentField && senasteKommentarer[id]) {
-      commentField.value = senasteKommentarer[id];
-      document.getElementById(`comment-${id}`).style.display = "flex";
-    }
-    const groupId = Object.entries(grupper).find(([, list]) => list.map(toId).includes(id))?.[0];
-    if (groupId) updateSummary(groupId);
-  }
-
-  document.getElementById("statusmeddelande").innerText = "Senaste rapport kopierad!";
-});
-
-document.getElementById("open-personal-popup").addEventListener("click", async () => {
-  const res = await fetch(PERSONAL_API);
-  const data = await res.json();
-  const list = document.getElementById("personal-list");
-  list.innerHTML = "";
-  data.forEach(p => {
-    const label = document.createElement("label");
-    label.style.display = "block";
-    label.innerHTML = `<input type="checkbox" name="personal" value="${p.namn}"> ${p.namn}`;
-    list.appendChild(label);
-  });
-  document.getElementById("personal-popup").style.display = "block";
-});
+function getGroupId(banaId) {
+  return Object.entries(grupper).find(([k, v]) => v.map(toId).includes(banaId))?.[0];
+}
 
 function skickaForm(e) {
   e.preventDefault();
   document.getElementById("kontroll-form").requestSubmit();
 }
 
-document.getElementById("kontroll-form").addEventListener("submit", async function (e) {
-  e.preventDefault();
-  const formData = new FormData(this);
-  const valdaPersonal = Array.from(document.querySelectorAll("input[name='personal']:checked")).map(cb => cb.value);
-  if (!valdaPersonal.length) return alert("Välj minst en person som arbetat idag.");
+async function hamtaPersonalLista() {
+  const res = await fetch(PERSONAL_API);
+  const data = await res.json();
+  const div = document.getElementById("personal-list");
+  div.innerHTML = "";
+  data.forEach(p => {
+    const id = `personal_${p.namn.replace(/\s+/g, "_")}`;
+    div.innerHTML += `<label style="display:block;"><input type="checkbox" name="personal" value="${p.namn}" id="${id}"> ${p.namn}</label>`;
+  });
+}
 
-  const data = { datum: new Date().toLocaleDateString("sv-SE"), personal: valdaPersonal.join(", ") };
-  for (const [key, val] of formData.entries()) {
-    if (!key.startsWith("kommentar_")) {
-      const kommentar = formData.get("kommentar_" + key) || "";
-      data[key + "_status"] = val;
-      data[key + "_kommentar"] = kommentar;
+document.getElementById("open-personal-popup").addEventListener("click", () => {
+  document.getElementById("personal-popup").style.display = "block";
+  hamtaPersonalLista();
+});
+
+document.getElementById("kopiera-senaste").addEventListener("click", async () => {
+  const res = await fetch(SHEETDB_API);
+  const data = await res.json();
+  const senaste = data[data.length - 1];
+
+  Object.entries(senaste).forEach(([key, value]) => {
+    if (key.endsWith("_status")) {
+      const id = key.replace("_status", "");
+      const radios = document.getElementsByName(id);
+      radios.forEach(r => r.checked = r.value === value);
     }
+    if (key.endsWith("_kommentar")) {
+      const id = key.replace("_kommentar", "");
+      const comment = document.querySelector(`[name="kommentar_${id}"]`);
+      if (comment) {
+        comment.value = value;
+        document.getElementById(`comment-${id}`).style.display = "flex";
+      }
+    }
+  });
+
+  Object.keys(grupper).forEach(updateSummary);
+  document.getElementById("statusmeddelande").innerText = "Senaste rapport kopierad!";
+});
+
+document.getElementById("kontroll-form").addEventListener("submit", async function(e) {
+  e.preventDefault();
+
+  const formData = new FormData(this);
+  const statusData = {};
+  const kommentarData = {};
+  for (let [key, val] of formData.entries()) {
+    if (key.startsWith("kommentar_")) kommentarData[key.replace("kommentar_", "")] = val;
+    else statusData[key] = val;
   }
 
-  try {
-    await fetch(SHEETDB_API, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ data: [data] })
-    });
-    this.reset();
-    document.querySelectorAll(".comment").forEach(el => el.style.display = "none");
-    document.getElementById("statusmeddelande").innerText = "Formuläret har skickats!";
-    document.getElementById("personal-popup").style.display = "none";
-  } catch (err) {
-    console.error("Fel vid skickning:", err);
-    document.getElementById("statusmeddelande").innerText = "Något gick fel, försök igen.";
-  }
+  const valdaPersonal = Array.from(document.querySelectorAll("input[name='personal']:checked"))
+    .map(cb => cb.value)
+    .join(", ");
+  if (!valdaPersonal) return alert("Välj minst en person.");
+
+  const payload = {
+    datum: new Date().toLocaleDateString("sv-SE"),
+    personal: valdaPersonal,
+  };
+
+  Object.entries(statusData).forEach(([bana, status]) => {
+    payload[`${bana}_status`] = status;
+  });
+  Object.entries(kommentarData).forEach(([bana, kommentar]) => {
+    payload[`${bana}_kommentar`] = kommentar;
+  });
+
+  await fetch(SHEETDB_API, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ data: [payload] })
+  });
+
+  this.reset();
+  document.querySelectorAll(".comment").forEach(c => c.style.display = "none");
+  document.getElementById("statusmeddelande").innerText = "Formuläret har skickats!";
+  document.getElementById("personal-popup").style.display = "none";
 });
 
 document.addEventListener("DOMContentLoaded", () => {
   const sektioner = document.getElementById("sektioner");
+
   for (const [groupId, lista] of Object.entries(grupper)) {
     const sektion = document.createElement("div");
     sektion.className = "section";
-    const collapsible = groupId !== "langa_linbanan";
+
+    const alwaysOpen = groupId === "langa_linbanan" ? ' always-open' : '';
     sektion.innerHTML = `
-      <div class="section-header" ${collapsible ? `onclick="toggleSection(this)"` : ""}>
+      <div class="section-header">
         <div>${groupId.replace("_", " ").replace("banor", "Banor").replace(/(^|\\s)\\S/g, l => l.toUpperCase())}</div>
         <div class="section-summary" id="summary-${groupId}"></div>
       </div>
-      <div class="section-content" id="content-${groupId}" style="${collapsible ? 'display:none' : 'display:block'}"></div>
+      <div class="section-content${alwaysOpen}" id="content-${groupId}"></div>
     `;
+
     sektioner.appendChild(sektion);
     const container = sektion.querySelector(`#content-${groupId}`);
     lista.forEach(namn => {
       container.insertAdjacentHTML("beforeend", skapaBanaHTML(namn, groupId));
     });
+
     updateSummary(groupId);
   }
 
