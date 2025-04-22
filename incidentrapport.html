@@ -20,21 +20,22 @@
       padding: 2rem;
       border-radius: 10px;
       box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-      position: relative;
     }
 
-    .rapport-header {
+    .header {
       display: flex;
       align-items: center;
       margin-bottom: 2rem;
     }
 
-    .rapport-header img {
-      height: 60px;
+    .header img {
+      max-height: 60px;
       margin-right: 1rem;
     }
 
-    .rapport-header h1 {
+    .header h1 {
+      flex: 1;
+      text-align: center;
       margin: 0;
       font-size: 2rem;
     }
@@ -57,14 +58,13 @@
       border-radius: 4px;
       box-sizing: border-box;
       font-family: inherit;
-      background-color: white;
+      white-space: pre-wrap; /* viktig för PNG-radbrytning */
     }
 
     textarea {
       resize: vertical;
       min-height: 100px;
       white-space: pre-wrap;
-      overflow-wrap: break-word;
     }
 
     .button-row {
@@ -93,8 +93,8 @@
 <body>
 
   <div class="container" id="rapport">
-    <div class="rapport-header">
-      <img src="logga.png" alt="Logotyp" />
+    <div class="header">
+      <img src="logga.png" alt="Logga">
       <h1>Incidentrapport</h1>
     </div>
 
@@ -130,6 +130,7 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script>
+    // Sätt dagens datum som standard
     document.addEventListener("DOMContentLoaded", () => {
       const idag = new Date().toISOString().split("T")[0];
       document.getElementById("datum").value = idag;
@@ -137,21 +138,20 @@
 
     function sparaSomPNG() {
       const knappar = document.getElementById("knappar");
-      knappar.style.display = "none";
+      knappar.style.display = "none"; // Dölj knappar
 
-      // Vänta ett ögonblick innan canvas skapas
-      setTimeout(() => {
-        html2canvas(document.getElementById("rapport"), {
-          useCORS: true,
-          scale: 2
-        }).then(canvas => {
-          const link = document.createElement("a");
-          link.download = `incidentrapport_${new Date().toLocaleDateString("sv-SE")}.png`;
-          link.href = canvas.toDataURL("image/png");
-          link.click();
-          knappar.style.display = "block";
-        });
-      }, 100); // ger tid för knappar att döljas ordentligt
+      html2canvas(document.getElementById("rapport"), {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: "#ffffff",
+        allowTaint: true
+      }).then(canvas => {
+        const link = document.createElement("a");
+        link.download = `incidentrapport_${new Date().toLocaleDateString("sv-SE")}.png`;
+        link.href = canvas.toDataURL("image/png");
+        link.click();
+        knappar.style.display = "block"; // Visa igen
+      });
     }
 
     function skickaRapport() {
