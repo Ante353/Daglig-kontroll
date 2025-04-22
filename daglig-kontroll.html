@@ -163,6 +163,7 @@
   <h1>Daglig Kontroll – Höghöjdsbanor</h1>
 
   <form id="kontroll-form">
+    <div id="senaste-datum" style="text-align: right; font-weight: bold; margin-bottom: 1rem;"></div>
     <div id="sektioner"></div>
 
     <button id="submit-button" type="submit">Skicka in</button>
@@ -272,42 +273,56 @@
     }
 
     async function visaSenasteStatus() {
-      const res = await fetch(SHEETDB_API);
-      const data = await res.json();
-      const senastePerBana = {};
-      for (const rad of data) {
-        const banaId = rad.bana?.toLowerCase().replace(/\s+/g, "_");
-        if (!senastePerBana[banaId]) {
-          senastePerBana[banaId] = rad.status;
-        }
-        if (!senasteKommentarer[banaId] && rad.kommentar) {
-          senasteKommentarer[banaId] = rad.kommentar;
-        }
-      }
+  const res = await fetch(SHEETDB_API);
+  const data = await res.json();
+  const senastePerBana = {};
 
-      for (const [banaId, status] of Object.entries(senastePerBana)) {
-        const container = document.querySelector(`[name='${banaId}']`)?.closest(".options");
-        if (container) {
-          const statusDiv = document.createElement("div");
-          statusDiv.className = "senaste-status";
-          statusDiv.innerText = `Senaste rapport: ${status}`;
-          container.parentElement.appendChild(statusDiv);
-        }
-      }
-
-      for (const [groupId, banor] of Object.entries(grupper)) {
-        let g = 0, a = 0, av = 0;
-        banor.forEach(namn => {
-          const id = toId(namn);
-          const status = senastePerBana[id];
-          if (status === "godkänd" || status === "Fullt godkänd") g++;
-          else if (status === "anmärkning" || status === "Anmärkning") a++;
-          else if (status === "avstängd" || status === "Avstängd") av++;
-        });
-        senasteStatus[groupId] = `${g} godkända, ${a} anmärkning, ${av} avstängd`;
-        updateSummary(groupId);
-      }
+  for (const rad of data) {
+    const banaId = rad.bana?.toLowerCase().replace(/\s+/g, "_");
+    if (!senastePerBana[banaId]) {
+      senastePerBana[banaId] = rad.status;
     }
+    if (!senasteKommentarer[banaId] && rad.kommentar) {
+      senasteKommentarer[banaId] = rad.kommentar;
+    }
+  }
+
+  for (const [banaId, status] of Object.entries(senastePerBana)) {
+    const container = document.querySelector(`[name='${banaId}']`)?.closest(".options");
+    if (container) {
+      const statusDiv = document.createElement("div");
+      statusDiv.className = "senaste-status";
+      statusDiv.innerText = `Senaste rapport: ${status}`;
+      container.parentElement.appendChild(statusDiv);
+    }
+  }
+
+  for (const [groupId, banor] of Object.entries(grupper)) {
+    let g = 0, a = 0, av = 0;
+    banor.forEach(namn => {
+      const id = toId(namn);
+      const status = senastePerBana[id];
+      if (status === "godkänd" || status === "Fullt godkänd") g++;
+      else if (status === "anmärkning" || status === "Anmärkning") a++;
+      else if (status === "avstängd" || status === "Avstängd") av++;
+    });
+    senasteStatus[groupId] = `${g} godkända, ${a} anmärkning, ${av} avstängd`;
+    updateSummary(groupId);
+  }
+
+  // 🔽 Lägg till detta INNAN funktionen avslutas!
+  const senasteDatum = data
+    .map(row => row.datum)
+    .filter(Boolean)
+    .sort()
+    .reverse()[0];
+
+  if (senasteDatum) {
+    document.getElementById("senaste-datum").innerText = `Senaste rapport: ${senasteDatum}`;
+  }
+}
+
+      
 
     document.addEventListener("DOMContentLoaded", () => {
       const sektioner = document.getElementById("sektioner");
