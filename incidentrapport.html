@@ -13,18 +13,18 @@
       color: #2c3e50;
     }
 
-    h1 {
-      text-align: center;
-      margin-bottom: 2rem;
-    }
-
-    form {
+    .container {
       max-width: 800px;
       margin: auto;
       background: white;
       padding: 2rem;
       border-radius: 10px;
-      border: 2px solid #000;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 2rem;
     }
 
     label {
@@ -34,23 +34,30 @@
     }
 
     input[type="text"],
+    input[type="date"],
     textarea,
     select {
       width: 100%;
-      padding: 0.5rem;
-      margin-top: 0.3rem;
+      padding: 0.6rem;
       font-size: 1rem;
-      border-radius: 5px;
+      margin-top: 0.3rem;
       border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+      font-family: inherit;
     }
 
-    .buttons {
-      display: flex;
-      justify-content: space-between;
+    textarea {
+      resize: vertical;
+      min-height: 100px;
+    }
+
+    .button-row {
+      text-align: center;
       margin-top: 2rem;
     }
 
-    button {
+    .button-row button {
       background-color: #f6f5ee;
       border: 2px solid #000;
       color: #000;
@@ -58,10 +65,11 @@
       padding: 1rem 2rem;
       font-size: 1rem;
       cursor: pointer;
+      margin: 0 1rem;
       transition: background-color 0.2s, color 0.2s;
     }
 
-    button:hover {
+    .button-row button:hover {
       background-color: #000;
       color: #fff;
     }
@@ -69,57 +77,64 @@
 </head>
 <body>
 
-  <h1>Incidentrapport</h1>
+  <div class="container" id="rapport">
+    <h1>Incidentrapport</h1>
 
-  <form id="incidentrapport">
     <label for="typ">Typ av incident:</label>
     <select id="typ" name="typ">
-      <option value="gäst">Gäst</option>
-      <option value="personal">Personal</option>
+      <option>Gäst</option>
+      <option>Personal</option>
     </select>
 
     <label for="datum">Datum:</label>
-    <input type="text" id="datum" name="datum" readonly>
+    <input type="date" id="datum" name="datum" />
 
     <label for="vem">Vem:</label>
-    <input type="text" id="vem" name="vem" placeholder="Kvinna 28 år / Andreas, Man 26 år">
+    <input type="text" id="vem" placeholder="Kvinna 28 år / Andreas, Man 26 år">
 
     <label for="plats">Plats:</label>
-    <input type="text" id="plats" name="plats" placeholder="Grön 2 plattform 3 / Gul 5 hinder 2">
+    <input type="text" id="plats" placeholder="Grön 2 plattform 3 / Gul 5 hinder 2">
 
     <label for="vad">Vad hände?</label>
-    <textarea id="vad" name="vad" rows="4"></textarea>
+    <textarea id="vad"></textarea>
 
-    <label for="forslag">Förslag på förbättring:</label>
-    <textarea id="forslag" name="forslag" rows="3"></textarea>
+    <label for="forslag">Förslag för att undvika igen:</label>
+    <textarea id="forslag"></textarea>
 
-    <label for="namn">Namn / Signatur:</label>
-    <input type="text" id="namn" name="namn">
+    <label for="signatur">Signatur / Namn:</label>
+    <input type="text" id="signatur">
+  </div>
 
-    <div class="buttons">
-      <button type="button" onclick="sparaRapport()">🖼️ Spara Rapport</button>
-      <button type="button" onclick="skickaRapport()">📤 Skicka Rapport</button>
-    </div>
-  </form>
+  <div class="button-row" id="knappar">
+    <button onclick="sparaSomPNG()">Spara Rapport</button>
+    <button onclick="skickaRapport()">Skicka Rapport</button>
+  </div>
 
-  <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script>
-    // Sätt dagens datum automatiskt
-    document.getElementById("datum").value = new Date().toLocaleDateString("sv-SE");
+    // Fyll i dagens datum som default
+    document.addEventListener("DOMContentLoaded", () => {
+      const idag = new Date().toISOString().split("T")[0];
+      document.getElementById("datum").value = idag;
+    });
 
-    function sparaRapport() {
-      const form = document.getElementById("incidentrapport");
-      html2canvas(form).then(canvas => {
+    function sparaSomPNG() {
+      const knappar = document.getElementById("knappar");
+      knappar.style.display = "none"; // Dölj knappar
+
+      html2canvas(document.getElementById("rapport")).then(canvas => {
         const link = document.createElement("a");
-        link.download = `incidentrapport_${Date.now()}.png`;
-        link.href = canvas.toDataURL();
+        link.download = `incidentrapport_${new Date().toLocaleDateString("sv-SE")}.png`;
+        link.href = canvas.toDataURL("image/png");
         link.click();
+        knappar.style.display = "block"; // Visa knappar igen
       });
     }
 
     function skickaRapport() {
-      alert("Denna funktion kommer att läggas till senare!");
+      alert("Funktion för att skicka via mail kommer senare.");
     }
   </script>
+
 </body>
 </html>
