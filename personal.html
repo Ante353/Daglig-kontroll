@@ -84,22 +84,25 @@
   <ul id="personallista"></ul>
 
   <script>
-    const SHEETDB_URL = "https://sheetdb.io/api/v1/y10d1n7d7f8md";
-    const bladnamn = "personallista";
+    const SHEETDB_URL = "https://sheetdb.io/api/v1/y10d1n7d7f8md?sheet=personallista";
 
     async function hamtaPersonal() {
-      const res = await fetch(`${SHEETDB_URL}/sheet/${bladnamn}`);
-      const data = await res.json();
-      const lista = document.getElementById("personallista");
-      lista.innerHTML = "";
-      data.forEach(person => {
-        const li = document.createElement("li");
-        li.innerHTML = `
-          ${person.namn}
-          <button class="delete" onclick="taBortNamn('${person.namn}')">🗑</button>
-        `;
-        lista.appendChild(li);
-      });
+      try {
+        const res = await fetch(SHEETDB_URL);
+        const data = await res.json();
+        const lista = document.getElementById("personallista");
+        lista.innerHTML = "";
+        data.forEach(person => {
+          const li = document.createElement("li");
+          li.innerHTML = `
+            ${person.namn}
+            <button class="delete" onclick="taBortNamn('${person.namn}')">🗑</button>
+          `;
+          lista.appendChild(li);
+        });
+      } catch (err) {
+        console.error("Fel vid hämtning:", err);
+      }
     }
 
     async function laggTillNamn() {
@@ -107,21 +110,28 @@
       const namn = input.value.trim();
       if (!namn) return;
 
-      await fetch(`${SHEETDB_URL}/sheet/${bladnamn}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ data: [{ namn }] })
-      });
-
-      input.value = "";
-      hamtaPersonal();
+      try {
+        await fetch(SHEETDB_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ data: [{ namn }] })
+        });
+        input.value = "";
+        hamtaPersonal();
+      } catch (err) {
+        console.error("Fel vid tillägg:", err);
+      }
     }
 
     async function taBortNamn(namn) {
-      await fetch(`${SHEETDB_URL}/sheet/${bladnamn}/namn/${encodeURIComponent(namn)}`, {
-        method: "DELETE"
-      });
-      hamtaPersonal();
+      try {
+        await fetch(`${SHEETDB_URL}&namn=${encodeURIComponent(namn)}`, {
+          method: "DELETE"
+        });
+        hamtaPersonal();
+      } catch (err) {
+        console.error("Fel vid borttagning:", err);
+      }
     }
 
     document.addEventListener("DOMContentLoaded", hamtaPersonal);
