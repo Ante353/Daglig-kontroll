@@ -184,7 +184,11 @@
     </div>
   </div>
 
+  <div style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-top: 1rem;">
   <button id="open-personal-popup" type="button">👥 Välj personal</button>
+  <button id="kopiera-senaste" type="button">📄 Kopiera senaste</button>
+</div>
+
   <p id="statusmeddelande"></p>
 </form>
 
@@ -373,6 +377,49 @@ document.getElementById("kontroll-form").addEventListener("submit", async functi
     document.getElementById("statusmeddelande").innerText = "Något gick fel, försök igen.";
   }
 });
+  document.getElementById("kopiera-senaste").addEventListener("click", async () => {
+  try {
+    const res = await fetch(SHEETDB_API);
+    const data = await res.json();
+    const senaste = data
+      .filter(r => r.bana && r.status)
+      .sort((a, b) => new Date(b.datum) - new Date(a.datum));
+
+    const senastePerBana = {};
+    const senasteKommentarer = {};
+
+    for (const rad of senaste) {
+      const id = rad.bana?.toLowerCase().replace(/\s+/g, "_");
+      if (!senastePerBana[id]) {
+        senastePerBana[id] = rad.status;
+        senasteKommentarer[id] = rad.kommentar || "";
+      }
+    }
+
+    for (const [id, status] of Object.entries(senastePerBana)) {
+      const radios = document.getElementsByName(id);
+      radios.forEach(r => r.checked = r.value === status);
+
+      const commentField = document.querySelector(`[name="kommentar_${id}"]`);
+      if (commentField && senasteKommentarer[id]) {
+        commentField.value = senasteKommentarer[id];
+        document.getElementById(`comment-${id}`).style.display = "flex";
+      }
+
+      const groupId = Object.entries(grupper).find(([, list]) =>
+        list.map(toId).includes(id)
+      )?.[0];
+
+      if (groupId) updateSummary(groupId);
+    }
+
+    document.getElementById("statusmeddelande").innerText = "Senaste rapport kopierad!";
+  } catch (err) {
+    alert("Kunde inte kopiera senaste rapporten.");
+    console.error(err);
+  }
+});
+
 
 document.addEventListener("DOMContentLoaded", () => {
   const sektioner = document.getElementById("sektioner");
