@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <title>Inställningar – Personal</title>
+  <style>
+    body {
+      font-family: 'Quicksand', sans-serif;
+      background-color: #f4f4f4;
+      padding: 2rem;
+      color: #333;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    #form-container {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      margin-bottom: 2rem;
+    }
+
+    input[type="text"] {
+      padding: 0.5rem;
+      font-size: 1rem;
+      width: 200px;
+    }
+
+    button {
+      padding: 0.5rem 1rem;
+      font-size: 1rem;
+      background-color: #f6f5ee;
+      border: 2px solid #000;
+      border-radius: 0;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #000;
+      color: white;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+      max-width: 400px;
+      margin: auto;
+    }
+
+    li {
+      background: #fff;
+      border: 1px solid #ccc;
+      margin-bottom: 0.5rem;
+      padding: 0.75rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .delete {
+      background: none;
+      border: none;
+      font-size: 1.2rem;
+      cursor: pointer;
+      color: #c00;
+    }
+
+    .delete:hover {
+      color: red;
+    }
+  </style>
+</head>
+<body>
+  <h1>Inställningar – Personal</h1>
+
+  <div id="form-container">
+    <input type="text" id="namn-input" placeholder="Namn på personal">
+    <button onclick="laggTillNamn()">Lägg till</button>
+  </div>
+
+  <ul id="personallista"></ul>
+
+  <script>
+    const SHEETDB_URL = "https://sheetdb.io/api/v1/y10d1n7d7f8md";
+    const bladnamn = "personallista";
+
+    async function hamtaPersonal() {
+      const res = await fetch(`${SHEETDB_URL}/sheet/${bladnamn}`);
+      const data = await res.json();
+      const lista = document.getElementById("personallista");
+      lista.innerHTML = "";
+      data.forEach(person => {
+        const li = document.createElement("li");
+        li.innerHTML = `
+          ${person.namn}
+          <button class="delete" onclick="taBortNamn('${person.namn}')">🗑</button>
+        `;
+        lista.appendChild(li);
+      });
+    }
+
+    async function laggTillNamn() {
+      const input = document.getElementById("namn-input");
+      const namn = input.value.trim();
+      if (!namn) return;
+
+      await fetch(`${SHEETDB_URL}/sheet/${bladnamn}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ data: [{ namn }] })
+      });
+
+      input.value = "";
+      hamtaPersonal();
+    }
+
+    async function taBortNamn(namn) {
+      await fetch(`${SHEETDB_URL}/sheet/${bladnamn}/namn/${encodeURIComponent(namn)}`, {
+        method: "DELETE"
+      });
+      hamtaPersonal();
+    }
+
+    document.addEventListener("DOMContentLoaded", hamtaPersonal);
+  </script>
+</body>
+</html>
