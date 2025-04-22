@@ -171,6 +171,19 @@
     <p id="statusmeddelande"></p>
   </form>
 
+<!-- Personal-knapp och popup -->
+<div style="text-align: center; margin-top: 1rem;">
+  <button type="button" onclick="togglePersonalPopup()">👥 Välj personal</button>
+</div>
+
+<div id="personal-popup" style="display: none; position: fixed; top: 20%; left: 50%; transform: translateX(-50%); background: #fff; border: 2px solid #000; padding: 1rem; z-index: 999;">
+  <h3>Välj dagens personal</h3>
+  <form id="personal-form" style="text-align: left; max-height: 300px; overflow-y: auto;"></form>
+  <div style="text-align: right; margin-top: 1rem;">
+    <button type="button" onclick="closePersonalPopup()">Stäng</button>
+  </div>
+</div>
+  
   <script>
     const grupper = {
       "gula_banor": ["Gul 1", "Gul 2", "Gul 3", "Gul 4", "Gul 5", "Gul 6", "Gul Linbana"],
@@ -346,6 +359,48 @@
 
       visaSenasteStatus();
     });
+    
+const personalSheetURL = "https://sheetdb.io/api/v1/y10d1n7d7f8md?sheet=personallista";
+
+async function hamtaPersonalLista() {
+  try {
+    const res = await fetch(personalSheetURL);
+    const data = await res.json();
+    const form = document.getElementById("personal-form");
+    form.innerHTML = ""; // töm gammalt
+
+    data.forEach(p => {
+      const id = `personal_${p.namn.replace(/\s+/g, "_")}`;
+      const label = document.createElement("label");
+      label.style.display = "block";
+      label.innerHTML = `
+        <input type="checkbox" name="personal" value="${p.namn}" id="${id}"> ${p.namn}
+      `;
+      form.appendChild(label);
+    });
+  } catch (err) {
+    alert("Kunde inte hämta personal från SheetDB.");
+    console.error(err);
+  }
+}
+
+function togglePersonalPopup() {
+  document.getElementById("personal-popup").style.display = "block";
+  hamtaPersonalLista();
+}
+
+function closePersonalPopup() {
+  document.getElementById("personal-popup").style.display = "none";
+}
+
+document.getElementById("kontroll-form").addEventListener("submit", function (e) {
+  const valda = document.querySelectorAll("input[name='personal']:checked");
+  if (valda.length === 0) {
+    e.preventDefault();
+    alert("Välj minst en person som arbetat idag.");
+  }
+});
+
   </script>
 </body>
 </html>
