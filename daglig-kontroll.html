@@ -12,16 +12,19 @@
       margin: 2rem;
       color: #2c3e50;
     }
+
     .logo-top {
       position: absolute;
       top: 1rem;
       left: 1rem;
       max-width: 80px;
     }
+
     h1 {
       text-align: center;
       margin-top: 4rem;
     }
+
     form {
       max-width: 900px;
       margin: auto;
@@ -30,11 +33,13 @@
       border-radius: 10px;
       box-shadow: 0 2px 10px rgba(0,0,0,0.1);
     }
+
     .section {
       margin-bottom: 1rem;
       border: 1px solid #ccc;
       border-radius: 5px;
     }
+
     .section-header {
       background: #eee;
       padding: 1rem;
@@ -47,6 +52,7 @@
       flex-wrap: wrap;
       gap: 1rem;
     }
+
     .section-summary {
       display: flex;
       justify-content: space-between;
@@ -57,13 +63,16 @@
       font-size: 0.9rem;
       color: #333;
     }
+
     .section-summary span:last-child {
       margin-left: auto;
     }
+
     .section-content {
       display: none;
       padding: 1rem;
     }
+
     .row {
       display: flex;
       justify-content: space-between;
@@ -71,10 +80,12 @@
       flex-wrap: wrap;
       margin-bottom: 0.5rem;
     }
+
     .label {
       flex: 1;
       font-weight: bold;
     }
+
     .options {
       flex: 2;
       display: flex;
@@ -82,12 +93,14 @@
       align-items: center;
       flex-wrap: wrap;
     }
+
     .comment {
       display: none;
       margin-top: 0.3rem;
       align-items: center;
       gap: 0.5rem;
     }
+
     textarea {
       flex: 1;
       padding: 0.5rem;
@@ -95,6 +108,7 @@
       border-radius: 5px;
       border: 1px solid #ccc;
     }
+
     .fetch-btn {
       height: 38px;
       padding: 0.2rem 0.5rem;
@@ -107,10 +121,35 @@
       cursor: pointer;
       border-radius: 4px;
     }
+
+    button {
+      background-color: #f6f5ee;
+      border: 2px solid #000;
+      color: #000;
+      border-radius: 0;
+      padding: 1rem 2rem;
+      font-size: 1rem;
+      cursor: pointer;
+      margin-top: 1.5rem;
+      transition: background-color 0.2s, color 0.2s;
+    }
+
+    button:hover {
+      background-color: #000;
+      color: #fff;
+    }
+
+    #statusmeddelande {
+      margin-top: 1rem;
+      font-weight: bold;
+    }
+
     .senaste-status {
       font-size: 0.9em;
+      font-weight: bold;
       margin-top: 0.3rem;
     }
+
     .senaste-status.green { color: green; }
     .senaste-status.yellow { color: goldenrod; }
     .senaste-status.red { color: red; }
@@ -129,27 +168,11 @@
       overflow-y: auto;
     }
 
-    button[type="submit"],
-    button[type="button"] {
-      background-color: #f6f5ee;
-      border: 2px solid #000;
-      color: #000;
-      border-radius: 0;
-      padding: 1rem 2rem;
-      font-size: 1rem;
-      cursor: pointer;
+    .button-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
       margin-top: 1.5rem;
-      transition: background-color 0.2s, color 0.2s;
-    }
-    button[type="submit"]:hover,
-    button[type="button"]:hover {
-      background-color: #000;
-      color: #fff;
-    }
-
-    #statusmeddelande {
-      margin-top: 1rem;
-      font-weight: bold;
     }
   </style>
 </head>
@@ -165,30 +188,12 @@
   <div id="senaste-datum" style="text-align: right; font-weight: bold; margin-bottom: 1rem;"></div>
   <div id="sektioner"></div>
 
-  <div id="langa-linbanan" class="section" style="display:block;">
-    <div class="section-header">
-      <div>Långa Linbanan</div>
-    </div>
-    <div class="section-content" style="display: block;">
-      <div class="row">
-        <div class="label">Långa Linbanan</div>
-        <div class="options">
-          <label><input type="radio" name="langa_linbanan" value="godkänd" checked onchange="toggleComment('langa_linbanan')"> Fullt godkänd</label>
-          <label><input type="radio" name="langa_linbanan" value="anmärkning" onchange="toggleComment('langa_linbanan')"> Anmärkning</label>
-          <label><input type="radio" name="langa_linbanan" value="avstängd" onchange="toggleComment('langa_linbanan')"> Avstängd</label>
-        </div>
-      </div>
-      <div class="comment" id="comment-langa_linbanan">
-        <textarea name="kommentar_langa_linbanan" placeholder="Kommentar om något är fel..."></textarea>
-      </div>
-    </div>
+  <div class="button-row">
+    <button id="open-personal-popup" type="button">👥 Välj personal</button>
+    <button id="kopiera-senaste" type="button">📋 Kopiera senaste</button>
   </div>
 
-  <div style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-top: 1rem;">
-  <button id="open-personal-popup" type="button">👥 Välj personal</button>
-  <button id="kopiera-senaste" type="button">📄 Kopiera senaste</button>
-</div>
-
+  <button id="edit-button" type="button" style="display:none;">Redigera dagens rapport</button>
   <p id="statusmeddelande"></p>
 </form>
 
@@ -208,26 +213,77 @@ const grupper = {
   "grona_banor": ["Grön 1", "Grön 2", "Grön 3", "Grön 4", "Grön 5"],
   "blaa_banor": ["Blå 1", "Blå 2", "Blå 3", "Blå 4", "Blå Linbana"],
   "roda_banor": ["Röd 1", "Röd 2", "Röd 3", "Röd 4"],
-  "svarta_banor": ["Svart 1", "Svart 13", "Svart 99"]
+  "svarta_banor": ["Svart 1", "Svart 13", "Svart 99"],
+  "langa_linbanan": ["Långa Linbanan"]
 };
 
 const SHEETDB_API = "https://sheetdb.io/api/v1/0m6qr0irhuaa0";
 const personalSheetURL = "https://sheetdb.io/api/v1/y10d1n7d7f8md?sheet=personallista";
 const senasteKommentarer = {};
 const senasteStatus = {};
+const idag = new Date().toISOString().split("T")[0];
 
 function toId(namn) {
   return namn.toLowerCase().replace(/å/g, 'a').replace(/ä/g, 'a').replace(/ö/g, 'o').replace(/\s+/g, '_');
 }
 
+function toggleSection(header) {
+  const content = header.nextElementSibling;
+  content.style.display = content.style.display === "block" ? "none" : "block";
+}
+
 function toggleComment(id) {
   const radios = document.getElementsByName(id);
   const commentDiv = document.getElementById("comment-" + id);
+  const commentField = commentDiv.querySelector("textarea");
+  const fetchBtnId = `fetch-btn-${id}`;
   let visaKommentar = false;
-  radios.forEach(r => {
-    if (r.checked && (r.value === "anmärkning" || r.value === "avstängd")) visaKommentar = true;
+
+  for (const r of radios) {
+    if (r.checked && (r.value === "anmärkning" || r.value === "avstängd")) {
+      visaKommentar = true;
+    }
+  }
+
+  if (visaKommentar) {
+    commentDiv.style.display = "flex";
+    if (!document.getElementById(fetchBtnId)) {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.id = fetchBtnId;
+      btn.innerText = "📋";
+      btn.title = "Hämta tidigare kommentar";
+      btn.className = "fetch-btn";
+      btn.addEventListener("click", () => {
+        const kommentar = senasteKommentarer[id];
+        if (kommentar) commentField.value = kommentar;
+        else alert("Ingen tidigare kommentar hittades.");
+      });
+      commentDiv.appendChild(btn);
+    }
+  } else {
+    commentDiv.style.display = "none";
+  }
+}
+
+function updateSummary(groupId) {
+  const group = grupper[groupId];
+  let godkand = 0, anmarkning = 0, avstangd = 0;
+  group.forEach(namn => {
+    const id = toId(namn);
+    const radios = document.getElementsByName(id);
+    radios.forEach(r => {
+      if (r.checked) {
+        if (r.value === "godkänd") godkand++;
+        else if (r.value === "anmärkning") anmarkning++;
+        else if (r.value === "avstängd") avstangd++;
+      }
+    });
   });
-  commentDiv.style.display = visaKommentar ? "flex" : "none";
+  const liveText = `${godkand} godkända, ${anmarkning} anmärkning, ${avstangd} avstängd`;
+  const senasteText = senasteStatus[groupId] ?? "";
+  document.getElementById(`summary-${groupId}`).innerHTML =
+    `<span>${liveText}</span><span>Senast: ${senasteText}</span>`;
 }
 
 function skapaBanaHTML(namn, groupId) {
@@ -240,31 +296,10 @@ function skapaBanaHTML(namn, groupId) {
         <label><input type="radio" name="${id}" value="anmärkning" onchange="toggleComment('${id}'); updateSummary('${groupId}')"> Anmärkning</label>
         <label><input type="radio" name="${id}" value="avstängd" onchange="toggleComment('${id}'); updateSummary('${groupId}')"> Avstängd</label>
       </div>
-      <div class="comment" id="comment-${id}">
-        <textarea name="kommentar_${id}" placeholder="Kommentar om något är fel..."></textarea>
-      </div>
     </div>
-  `;
-}
-
-function updateSummary(groupId) {
-  const group = grupper[groupId];
-  let g = 0, a = 0, av = 0;
-  group.forEach(namn => {
-    const id = toId(namn);
-    const radios = document.getElementsByName(id);
-    radios.forEach(r => {
-      if (r.checked) {
-        if (r.value === "godkänd") g++;
-        else if (r.value === "anmärkning") a++;
-        else if (r.value === "avstängd") av++;
-      }
-    });
-  });
-  const liveText = `${g} godkända, ${a} anmärkning, ${av} avstängd`;
-  const senasteText = senasteStatus[groupId] ?? "";
-  document.getElementById(`summary-${groupId}`).innerHTML =
-    `<span>${liveText}</span><span>Senast: ${senasteText}</span>`;
+    <div class="comment" id="comment-${id}">
+      <textarea name="kommentar_${id}" placeholder="Kommentar om något är fel..."></textarea>
+    </div>`;
 }
 
 async function visaSenasteStatus() {
@@ -308,6 +343,11 @@ async function visaSenasteStatus() {
   }
 }
 
+document.getElementById("open-personal-popup").addEventListener("click", () => {
+  document.getElementById("personal-popup").style.display = "block";
+  hamtaPersonalLista();
+});
+
 async function hamtaPersonalLista() {
   const res = await fetch(personalSheetURL);
   const data = await res.json();
@@ -322,15 +362,49 @@ async function hamtaPersonalLista() {
   });
 }
 
-document.getElementById("open-personal-popup").addEventListener("click", () => {
-  document.getElementById("personal-popup").style.display = "block";
-  hamtaPersonalLista();
-});
-
 function skickaForm(e) {
   e.preventDefault();
   document.getElementById("kontroll-form").requestSubmit();
 }
+
+document.getElementById("kopiera-senaste").addEventListener("click", async () => {
+  try {
+    const res = await fetch(SHEETDB_API);
+    const data = await res.json();
+    const senaste = data.filter(r => r.bana && r.status).sort((a, b) => new Date(b.datum) - new Date(a.datum));
+    const senastePerBana = {};
+    const senasteKommentarer = {};
+
+    for (const rad of senaste) {
+      const id = rad.bana?.toLowerCase().replace(/\s+/g, "_");
+      if (!senastePerBana[id]) {
+        senastePerBana[id] = rad.status;
+        senasteKommentarer[id] = rad.kommentar || "";
+      }
+    }
+
+    for (const [id, status] of Object.entries(senastePerBana)) {
+      const radios = document.getElementsByName(id);
+      radios.forEach(r => r.checked = r.value === status);
+      const commentField = document.querySelector(`[name="kommentar_${id}"]`);
+      if (commentField && senasteKommentarer[id]) {
+        commentField.value = senasteKommentarer[id];
+        document.getElementById(`comment-${id}`).style.display = "flex";
+      }
+
+      const groupId = Object.entries(grupper).find(([, list]) =>
+        list.map(toId).includes(id)
+      )?.[0];
+
+      if (groupId) updateSummary(groupId);
+    }
+
+    document.getElementById("statusmeddelande").innerText = "Senaste rapport kopierad!";
+  } catch (err) {
+    alert("Kunde inte kopiera senaste rapporten.");
+    console.error(err);
+  }
+});
 
 document.getElementById("kontroll-form").addEventListener("submit", async function (e) {
   e.preventDefault();
@@ -377,49 +451,6 @@ document.getElementById("kontroll-form").addEventListener("submit", async functi
     document.getElementById("statusmeddelande").innerText = "Något gick fel, försök igen.";
   }
 });
-  document.getElementById("kopiera-senaste").addEventListener("click", async () => {
-  try {
-    const res = await fetch(SHEETDB_API);
-    const data = await res.json();
-    const senaste = data
-      .filter(r => r.bana && r.status)
-      .sort((a, b) => new Date(b.datum) - new Date(a.datum));
-
-    const senastePerBana = {};
-    const senasteKommentarer = {};
-
-    for (const rad of senaste) {
-      const id = rad.bana?.toLowerCase().replace(/\s+/g, "_");
-      if (!senastePerBana[id]) {
-        senastePerBana[id] = rad.status;
-        senasteKommentarer[id] = rad.kommentar || "";
-      }
-    }
-
-    for (const [id, status] of Object.entries(senastePerBana)) {
-      const radios = document.getElementsByName(id);
-      radios.forEach(r => r.checked = r.value === status);
-
-      const commentField = document.querySelector(`[name="kommentar_${id}"]`);
-      if (commentField && senasteKommentarer[id]) {
-        commentField.value = senasteKommentarer[id];
-        document.getElementById(`comment-${id}`).style.display = "flex";
-      }
-
-      const groupId = Object.entries(grupper).find(([, list]) =>
-        list.map(toId).includes(id)
-      )?.[0];
-
-      if (groupId) updateSummary(groupId);
-    }
-
-    document.getElementById("statusmeddelande").innerText = "Senaste rapport kopierad!";
-  } catch (err) {
-    alert("Kunde inte kopiera senaste rapporten.");
-    console.error(err);
-  }
-});
-
 
 document.addEventListener("DOMContentLoaded", () => {
   const sektioner = document.getElementById("sektioner");
@@ -427,16 +458,16 @@ document.addEventListener("DOMContentLoaded", () => {
     const sektion = document.createElement("div");
     sektion.className = "section";
     sektion.innerHTML = `
-      <div class="section-header" onclick="toggleSection(this)">
+      <div class="section-header" ${groupId !== "langa_linbanan" ? `onclick="toggleSection(this)"` : ""}>
         <div>${groupId.replace("_", " ").replace("banor", "Banor").replace(/(^|\\s)\\S/g, l => l.toUpperCase())}</div>
         <div class="section-summary" id="summary-${groupId}"></div>
       </div>
-      <div class="section-content" id="content-${groupId}"></div>
+      <div class="section-content" id="content-${groupId}" style="display: ${groupId === "langa_linbanan" ? "block" : "none"};"></div>
     `;
     sektioner.appendChild(sektion);
-    const content = sektion.querySelector(`#content-${groupId}`);
+    const container = sektion.querySelector(`#content-${groupId}`);
     lista.forEach(namn => {
-      content.insertAdjacentHTML("beforeend", skapaBanaHTML(namn, groupId));
+      container.insertAdjacentHTML("beforeend", skapaBanaHTML(namn, groupId));
     });
     updateSummary(groupId);
   }
