@@ -12,19 +12,16 @@
       margin: 2rem;
       color: #2c3e50;
     }
-
     .logo-top {
       position: absolute;
       top: 1rem;
       left: 1rem;
       max-width: 80px;
     }
-
     h1 {
       text-align: center;
       margin-top: 4rem;
     }
-
     form {
       max-width: 900px;
       margin: auto;
@@ -33,146 +30,58 @@
       border-radius: 10px;
       box-shadow: 0 2px 10px rgba(0,0,0,0.1);
     }
-
-    .section {
-      margin-bottom: 1rem;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-    }
-
+    .section { margin-bottom: 1rem; border: 1px solid #ccc; border-radius: 5px; }
     .section-header {
-      background: #eee;
-      padding: 1rem;
-      font-weight: bold;
-      cursor: pointer;
-      user-select: none;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 1rem;
+      background: #eee; padding: 1rem; font-weight: bold; cursor: pointer;
+      user-select: none; display: flex; justify-content: space-between;
+      align-items: center; flex-wrap: wrap; gap: 1rem;
     }
-
     .section-summary {
-      display: flex;
-      justify-content: space-between;
-      gap: 1rem;
-      flex-wrap: wrap;
-      width: 100%;
-      font-weight: normal;
-      font-size: 0.9rem;
-      color: #333;
+      display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap;
+      width: 100%; font-weight: normal; font-size: 0.9rem; color: #333;
     }
-
-    .section-summary span:last-child {
-      margin-left: auto;
-    }
-
-    .section-content {
-      display: none;
-      padding: 1rem;
-    }
-
+    .section-summary span:last-child { margin-left: auto; }
+    .section-content { display: none; padding: 1rem; }
     .row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      margin-bottom: 0.5rem;
+      display: flex; justify-content: space-between; align-items: center;
+      flex-wrap: wrap; margin-bottom: 0.5rem;
     }
-
-    .label {
-      flex: 1;
-      font-weight: bold;
-    }
-
+    .label { flex: 1; font-weight: bold; }
     .options {
-      flex: 2;
-      display: flex;
-      gap: 1rem;
-      align-items: center;
-      flex-wrap: wrap;
+      flex: 2; display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;
     }
-
     .comment {
-      display: none;
-      margin-top: 0.3rem;
-      align-items: center;
-      gap: 0.5rem;
+      display: none; margin-top: 0.3rem; align-items: center; gap: 0.5rem;
     }
-
     textarea {
-      flex: 1;
-      padding: 0.5rem;
-      font-size: 1rem;
-      border-radius: 5px;
+      flex: 1; padding: 0.5rem; font-size: 1rem; border-radius: 5px;
       border: 1px solid #ccc;
     }
-
     .fetch-btn {
-      height: 38px;
-      padding: 0.2rem 0.5rem;
-      font-size: 1rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border: 1px solid #ccc;
-      background: #eee;
-      cursor: pointer;
-      border-radius: 4px;
+      height: 38px; padding: 0.2rem 0.5rem; font-size: 1rem;
+      display: flex; align-items: center; justify-content: center;
+      border: 1px solid #ccc; background: #eee; cursor: pointer; border-radius: 4px;
     }
-
-    button {
-      background-color: #f6f5ee;
-      border: 2px solid #000;
-      color: #000;
-      border-radius: 0;
-      padding: 1rem 2rem;
-      font-size: 1rem;
-      cursor: pointer;
-      margin-top: 1.5rem;
+    button[type="submit"], button[type="button"] {
+      background-color: #f6f5ee; border: 2px solid #000; color: #000;
+      border-radius: 0; padding: 1rem 2rem; font-size: 1rem;
+      cursor: pointer; margin-top: 1.5rem;
       transition: background-color 0.2s, color 0.2s;
     }
-
-    button:hover {
-      background-color: #000;
-      color: #fff;
+    button[type="submit"]:hover, button[type="button"]:hover {
+      background-color: #000; color: #fff;
     }
-
     #statusmeddelande {
-      margin-top: 1rem;
-      font-weight: bold;
+      margin-top: 1rem; font-weight: bold;
     }
-
     .senaste-status {
-      font-size: 0.9em;
-      font-weight: bold;
-      margin-top: 0.3rem;
+      font-size: 0.9em; color: #555; margin-top: 0.3rem;
     }
-
-    .senaste-status.green { color: green; }
-    .senaste-status.yellow { color: goldenrod; }
-    .senaste-status.red { color: red; }
-
     #personal-popup {
-      display: none;
-      position: fixed;
-      top: 20%;
-      left: 50%;
-      transform: translateX(-50%);
-      background: #fff;
-      border: 2px solid #000;
-      padding: 1rem;
-      z-index: 999;
-      max-height: 400px;
-      overflow-y: auto;
-    }
-
-    .button-row {
-      display: flex;
-      justify-content: space-between;
-      gap: 1rem;
-      margin-top: 1.5rem;
+      display: none; position: fixed; top: 20%; left: 50%;
+      transform: translateX(-50%); background: #fff;
+      border: 2px solid #000; padding: 1rem; z-index: 999;
+      max-height: 400px; overflow-y: auto;
     }
   </style>
 </head>
@@ -188,11 +97,7 @@
   <div id="senaste-datum" style="text-align: right; font-weight: bold; margin-bottom: 1rem;"></div>
   <div id="sektioner"></div>
 
-  <div class="button-row">
-    <button id="open-personal-popup" type="button">👥 Välj personal</button>
-    <button id="kopiera-senaste" type="button">📋 Kopiera senaste</button>
-  </div>
-
+  <button id="open-personal-popup" type="button">👥 Välj personal</button>
   <button id="edit-button" type="button" style="display:none;">Redigera dagens rapport</button>
   <p id="statusmeddelande"></p>
 </form>
@@ -308,20 +213,9 @@ async function visaSenasteStatus() {
   const senastePerBana = {};
 
   for (const rad of data) {
-    const id = rad.bana?.toLowerCase().replace(/\s+/g, "_");
-    if (!senastePerBana[id]) senastePerBana[id] = rad.status;
-    if (!senasteKommentarer[id] && rad.kommentar) senasteKommentarer[id] = rad.kommentar;
-  }
-
-  for (const [id, status] of Object.entries(senastePerBana)) {
-    const container = document.querySelector(`[name='${id}']`)?.closest(".options");
-    if (container) {
-      const div = document.createElement("div");
-      div.className = "senaste-status";
-      div.classList.add(status === "godkänd" ? "green" : status === "anmärkning" ? "yellow" : "red");
-      div.innerText = `Senaste rapport: ${status}`;
-      container.parentElement.appendChild(div);
-    }
+    const banaId = rad.bana?.toLowerCase().replace(/\s+/g, "_");
+    if (!senastePerBana[banaId]) senastePerBana[banaId] = rad.status;
+    if (!senasteKommentarer[banaId] && rad.kommentar) senasteKommentarer[banaId] = rad.kommentar;
   }
 
   for (const [groupId, banor] of Object.entries(grupper)) {
@@ -343,11 +237,6 @@ async function visaSenasteStatus() {
   }
 }
 
-document.getElementById("open-personal-popup").addEventListener("click", () => {
-  document.getElementById("personal-popup").style.display = "block";
-  hamtaPersonalLista();
-});
-
 async function hamtaPersonalLista() {
   const res = await fetch(personalSheetURL);
   const data = await res.json();
@@ -362,59 +251,28 @@ async function hamtaPersonalLista() {
   });
 }
 
+document.getElementById("open-personal-popup").addEventListener("click", () => {
+  document.getElementById("personal-popup").style.display = "block";
+  hamtaPersonalLista();
+});
+
 function skickaForm(e) {
   e.preventDefault();
   document.getElementById("kontroll-form").requestSubmit();
 }
 
-document.getElementById("kopiera-senaste").addEventListener("click", async () => {
-  try {
-    const res = await fetch(SHEETDB_API);
-    const data = await res.json();
-    const senaste = data.filter(r => r.bana && r.status).sort((a, b) => new Date(b.datum) - new Date(a.datum));
-    const senastePerBana = {};
-    const senasteKommentarer = {};
-
-    for (const rad of senaste) {
-      const id = rad.bana?.toLowerCase().replace(/\s+/g, "_");
-      if (!senastePerBana[id]) {
-        senastePerBana[id] = rad.status;
-        senasteKommentarer[id] = rad.kommentar || "";
-      }
-    }
-
-    for (const [id, status] of Object.entries(senastePerBana)) {
-      const radios = document.getElementsByName(id);
-      radios.forEach(r => r.checked = r.value === status);
-      const commentField = document.querySelector(`[name="kommentar_${id}"]`);
-      if (commentField && senasteKommentarer[id]) {
-        commentField.value = senasteKommentarer[id];
-        document.getElementById(`comment-${id}`).style.display = "flex";
-      }
-
-      const groupId = Object.entries(grupper).find(([, list]) =>
-        list.map(toId).includes(id)
-      )?.[0];
-
-      if (groupId) updateSummary(groupId);
-    }
-
-    document.getElementById("statusmeddelande").innerText = "Senaste rapport kopierad!";
-  } catch (err) {
-    alert("Kunde inte kopiera senaste rapporten.");
-    console.error(err);
-  }
-});
-
 document.getElementById("kontroll-form").addEventListener("submit", async function (e) {
   e.preventDefault();
   const formData = new FormData(this);
   const grupperadeData = {};
+
   for (let [key, value] of formData.entries()) {
     if (key.startsWith("kommentar_")) continue;
     const kommentarKey = "kommentar_" + key;
-    const kommentar = formData.get(kommentarKey) || "";
-    grupperadeData[key] = { status: value, comment: kommentar };
+    grupperadeData[key] = {
+      status: value,
+      kommentar: formData.get(kommentarKey) || ""
+    };
   }
 
   const valdaPersonal = Array.from(document.querySelectorAll("input[name='personal']:checked"))
@@ -427,24 +285,27 @@ document.getElementById("kontroll-form").addEventListener("submit", async functi
   }
 
   const datum = new Date().toLocaleDateString("sv-SE");
-  const banaData = Object.entries(grupperadeData).map(([bana, info]) => ({
-    datum: datum,
-    bana: bana,
-    status: info.status,
-    kommentar: info.comment
-  }));
-  const personalData = { datum: datum, personal: valdaPersonal };
+  const dataToSend = {
+    datum,
+    personal: valdaPersonal
+  };
+
+  for (const [bana, info] of Object.entries(grupperadeData)) {
+    dataToSend[`${bana}_status`] = info.status;
+    dataToSend[`${bana}_kommentar`] = info.kommentar;
+  }
 
   try {
     const res = await fetch(SHEETDB_API, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ data: [...banaData, personalData] })
+      body: JSON.stringify({ data: [dataToSend] })
     });
+
     await res.json();
+    document.getElementById("statusmeddelande").innerText = "Formuläret har skickats!";
     this.reset();
     document.querySelectorAll(".comment").forEach(el => el.style.display = "none");
-    document.getElementById("statusmeddelande").innerText = "Formuläret har skickats!";
     document.getElementById("personal-popup").style.display = "none";
   } catch (err) {
     console.error("Fel vid skickning:", err);
@@ -458,11 +319,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const sektion = document.createElement("div");
     sektion.className = "section";
     sektion.innerHTML = `
-      <div class="section-header" ${groupId !== "langa_linbanan" ? `onclick="toggleSection(this)"` : ""}>
+      <div class="section-header" onclick="toggleSection(this)">
         <div>${groupId.replace("_", " ").replace("banor", "Banor").replace(/(^|\\s)\\S/g, l => l.toUpperCase())}</div>
         <div class="section-summary" id="summary-${groupId}"></div>
       </div>
-      <div class="section-content" id="content-${groupId}" style="display: ${groupId === "langa_linbanan" ? "block" : "none"};"></div>
+      <div class="section-content" id="content-${groupId}"></div>
     `;
     sektioner.appendChild(sektion);
     const container = sektion.querySelector(`#content-${groupId}`);
@@ -475,6 +336,5 @@ document.addEventListener("DOMContentLoaded", () => {
   visaSenasteStatus();
 });
 </script>
-
 </body>
 </html>
