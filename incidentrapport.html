@@ -13,37 +13,44 @@
       color: #2c3e50;
     }
 
-    .container {
+    h1 {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    form {
       max-width: 800px;
       margin: auto;
       background: white;
       padding: 2rem;
       border-radius: 10px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    }
-
-    h1 {
-      text-align: center;
+      border: 2px solid #000;
     }
 
     label {
-      font-weight: bold;
       display: block;
-      margin-top: 1.5rem;
+      margin-top: 1rem;
+      font-weight: bold;
     }
 
-    textarea, input, select {
+    input[type="text"],
+    textarea,
+    select {
       width: 100%;
-      padding: 0.6rem;
+      padding: 0.5rem;
       margin-top: 0.3rem;
       font-size: 1rem;
-      border: 1px solid #ccc;
       border-radius: 5px;
-      font-family: 'Quicksand', sans-serif;
+      border: 1px solid #ccc;
+    }
+
+    .buttons {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 2rem;
     }
 
     button {
-      margin-top: 2rem;
       background-color: #f6f5ee;
       border: 2px solid #000;
       color: #000;
@@ -61,39 +68,64 @@
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1> Incidentrapport</h1>
-    <form>
-      <label for="typ">Gäller det:</label>
-      <select id="typ" name="typ">
-        <option>Gäst</option>
-        <option>Personal</option>
-      </select>
 
-      <label for="datum">Datum:</label>
-      <input type="date" id="datum" name="datum" value="" required>
+  <h1>Incidentrapport</h1>
 
-      <label for="vem">Vem:</label>
-      <input type="text" id="vem" name="vem" placeholder="Kvinna 28 år / Andreas, Man 26 år">
+  <form id="incidentrapport">
+    <label for="typ">Typ av incident:</label>
+    <select id="typ" name="typ">
+      <option value="gäst">Gäst</option>
+      <option value="personal">Personal</option>
+    </select>
 
-      <label for="plats">Plats:</label>
-      <input type="text" id="plats" name="plats" placeholder="Grön 2 plattform 3 / Gul 5 hinder 2">
+    <label for="datum">Datum:</label>
+    <input type="text" id="datum" name="datum" readonly>
 
-      <label for="vad">Vad hände?</label>
-      <textarea id="vad" name="vad" rows="4" placeholder="Beskriv händelsen..."></textarea>
+    <label for="vem">Vem:</label>
+    <input type="text" id="vem" name="vem" placeholder="Kvinna 28 år / Andreas, Man 26 år">
 
-      <label for="forslag">Förslag på förbättring:</label>
-      <textarea id="forslag" name="forslag" rows="3"></textarea>
+    <label for="plats">Plats:</label>
+    <input type="text" id="plats" name="plats" placeholder="Grön 2 plattform 3 / Gul 5 hinder 2">
 
-      <label for="signatur">Namn / Signatur:</label>
-      <input type="text" id="signatur" name="signatur">
+    <label for="vad">Vad hände?</label>
+    <textarea id="vad" name="vad" rows="4"></textarea>
 
-      <button type="submit">Skicka in</button>
-    </form>
-  </div>
+    <label for="orsak">Orsak:</label>
+    <textarea id="orsak" name="orsak" rows="3"></textarea>
 
+    <label for="atgarder">Åtgärder:</label>
+    <textarea id="atgarder" name="atgarder" rows="3"></textarea>
+
+    <label for="forslag">Förslag för framtiden:</label>
+    <textarea id="forslag" name="forslag" rows="3"></textarea>
+
+    <label for="namn">Namn / Signatur:</label>
+    <input type="text" id="namn" name="namn">
+
+    <div class="buttons">
+      <button type="button" onclick="sparaRapport()">🖼️ Spara Rapport</button>
+      <button type="button" onclick="skickaRapport()">📤 Skicka Rapport</button>
+    </div>
+  </form>
+
+  <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
   <script>
-    document.getElementById("datum").valueAsDate = new Date();
+    // Sätt dagens datum automatiskt
+    document.getElementById("datum").value = new Date().toLocaleDateString("sv-SE");
+
+    function sparaRapport() {
+      const form = document.getElementById("incidentrapport");
+      html2canvas(form).then(canvas => {
+        const link = document.createElement("a");
+        link.download = `incidentrapport_${Date.now()}.png`;
+        link.href = canvas.toDataURL();
+        link.click();
+      });
+    }
+
+    function skickaRapport() {
+      alert("Denna funktion kommer att läggas till senare!");
+    }
   </script>
 </body>
 </html>
