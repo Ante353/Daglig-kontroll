@@ -12,19 +12,16 @@
       margin: 2rem;
       color: #2c3e50;
     }
-
     .logo-top {
       position: absolute;
       top: 1rem;
       left: 1rem;
       max-width: 80px;
     }
-
     h1 {
       text-align: center;
       margin-top: 4rem;
     }
-
     form {
       max-width: 900px;
       margin: auto;
@@ -33,17 +30,16 @@
       border-radius: 10px;
       box-shadow: 0 2px 10px rgba(0,0,0,0.1);
     }
-
     .section {
       margin-bottom: 1rem;
       border: 1px solid #ccc;
       border-radius: 5px;
     }
-
     .section-header {
       background: #eee;
       padding: 1rem;
       font-weight: bold;
+      cursor: pointer;
       user-select: none;
       display: flex;
       justify-content: space-between;
@@ -51,7 +47,6 @@
       flex-wrap: wrap;
       gap: 1rem;
     }
-
     .section-summary {
       display: flex;
       justify-content: space-between;
@@ -62,16 +57,13 @@
       font-size: 0.9rem;
       color: #333;
     }
-
     .section-summary span:last-child {
       margin-left: auto;
     }
-
     .section-content {
       display: none;
       padding: 1rem;
     }
-
     .row {
       display: flex;
       justify-content: space-between;
@@ -79,12 +71,10 @@
       flex-wrap: wrap;
       margin-bottom: 0.5rem;
     }
-
     .label {
       flex: 1;
       font-weight: bold;
     }
-
     .options {
       flex: 2;
       display: flex;
@@ -92,14 +82,12 @@
       align-items: center;
       flex-wrap: wrap;
     }
-
     .comment {
       display: none;
       margin-top: 0.3rem;
       align-items: center;
       gap: 0.5rem;
     }
-
     textarea {
       flex: 1;
       padding: 0.5rem;
@@ -107,7 +95,6 @@
       border-radius: 5px;
       border: 1px solid #ccc;
     }
-
     .fetch-btn {
       height: 38px;
       padding: 0.2rem 0.5rem;
@@ -120,12 +107,8 @@
       cursor: pointer;
       border-radius: 4px;
     }
-
-    .green { color: green; }
-    .yellow { color: goldenrod; }
-    .red { color: red; }
-
-    button {
+    button[type="submit"],
+    button[type="button"] {
       background-color: #f6f5ee;
       border: 2px solid #000;
       color: #000;
@@ -133,79 +116,40 @@
       padding: 1rem 2rem;
       font-size: 1rem;
       cursor: pointer;
-      margin-top: 1rem;
-      margin-right: 1rem;
+      margin-top: 1.5rem;
       transition: background-color 0.2s, color 0.2s;
     }
-
     button:hover {
       background-color: #000;
       color: #fff;
     }
-
     #statusmeddelande {
       margin-top: 1rem;
       font-weight: bold;
     }
-
-    #personal-popup {
-      display: none;
-      position: fixed;
-      top: 20%;
-      left: 50%;
-      transform: translateX(-50%);
-      background: #fff;
-      border: 2px solid #000;
-      padding: 1rem;
-      z-index: 999;
-      max-height: 400px;
-      overflow-y: auto;
+    .senaste-status {
+      font-size: 0.9em;
+      margin-top: 0.3rem;
     }
-
-    .popup-actions {
-      display: flex;
-      justify-content: flex-end;
-      gap: 1rem;
-      margin-top: 1rem;
-    }
-
-    .always-open {
-      display: block !important;
-    }
+    .green { color: green; }
+    .yellow { color: orange; }
+    .red { color: red; }
   </style>
 </head>
 <body>
 
-<a href="index.html">
-  <img src="logga.png" alt="Logotyp" class="logo-top" />
-</a>
-
+<a href="index.html"><img src="logga.png" alt="Logotyp" class="logo-top" /></a>
 <h1>Daglig Kontroll – Höghöjdsbanor</h1>
 
 <form id="kontroll-form">
-  <div id="senaste-datum" style="text-align: right; font-weight: bold; margin-bottom: 1rem;"></div>
+  <div id="senaste-datum" style="text-align:right;font-weight:bold;margin-bottom:1rem;"></div>
   <div id="sektioner"></div>
-
-  <div style="text-align: center;">
-    <button type="button" id="open-personal-popup">👥 Välj personal</button>
-    <button type="button" id="kopiera-senaste" style="float: right;">📄 Kopiera senaste rapport</button>
-  </div>
-
-  <button id="edit-button" type="button" style="display:none;">Redigera dagens rapport</button>
+  <button type="submit">Skicka in</button>
   <p id="statusmeddelande"></p>
 </form>
 
-<div id="personal-popup">
-  <h3>Välj dagens personal</h3>
-  <form id="personal-form" onsubmit="skickaForm(event)">
-    <div id="personal-list" style="text-align: left;"></div>
-    <div class="popup-actions">
-      <button type="submit">Skicka in</button>
-    </div>
-  </form>
-</div>
-
 <script>
+const SHEETDB_API = "https://sheetdb.io/api/v1/0m6qr0irhuaa0";
 const grupper = {
   "gula_banor": ["Gul 1", "Gul 2", "Gul 3", "Gul 4", "Gul 5", "Gul 6", "Gul Linbana"],
   "grona_banor": ["Grön 1", "Grön 2", "Grön 3", "Grön 4", "Grön 5"],
@@ -214,47 +158,27 @@ const grupper = {
   "svarta_banor": ["Svart 1", "Svart 13", "Svart 99"],
   "langa_linbanan": ["Långa Linbanan"]
 };
-
-const SHEETDB_API = "https://sheetdb.io/api/v1/0m6qr0irhuaa0";
-const PERSONAL_API = "https://sheetdb.io/api/v1/y10d1n7d7f8md?sheet=personallista";
 const senasteKommentarer = {};
 const senasteStatus = {};
 const idag = new Date().toISOString().split("T")[0];
 
 function toId(namn) {
-  return namn.toLowerCase().replace(/å/g, 'a').replace(/ä/g, 'a').replace(/ö/g, 'o').replace(/\s+/g, '_');
+  return namn.toLowerCase().replace(/å/g,'a').replace(/ä/g,'a').replace(/ö/g,'o').replace(/\s+/g,'_');
+}
+
+function toggleSection(header) {
+  const content = header.nextElementSibling;
+  content.style.display = content.style.display === "block" ? "none" : "block";
 }
 
 function toggleComment(id) {
   const radios = document.getElementsByName(id);
   const commentDiv = document.getElementById("comment-" + id);
-  const commentField = commentDiv.querySelector("textarea");
-  const fetchBtnId = `fetch-btn-${id}`;
   let visaKommentar = false;
-
-  radios.forEach(r => {
+  for (const r of radios) {
     if (r.checked && (r.value === "anmärkning" || r.value === "avstängd")) visaKommentar = true;
-  });
-
-  if (visaKommentar) {
-    commentDiv.style.display = "flex";
-    if (!document.getElementById(fetchBtnId)) {
-      const btn = document.createElement("button");
-      btn.type = "button";
-      btn.id = fetchBtnId;
-      btn.innerText = "📋";
-      btn.title = "Hämta tidigare kommentar";
-      btn.className = "fetch-btn";
-      btn.onclick = () => {
-        const kommentar = senasteKommentarer[id];
-        if (kommentar) commentField.value = kommentar;
-        else alert("Ingen tidigare kommentar hittades.");
-      };
-      commentDiv.appendChild(btn);
-    }
-  } else {
-    commentDiv.style.display = "none";
   }
+  commentDiv.style.display = visaKommentar ? "flex" : "none";
 }
 
 function updateSummary(groupId) {
@@ -271,11 +195,9 @@ function updateSummary(groupId) {
       }
     });
   });
-
   const liveText = `${g} godkända, ${a} anmärkning, ${av} avstängd`;
-  const senasteText = senasteStatus[groupId] ?? "";
-  document.getElementById(`summary-${groupId}`).innerHTML =
-    `<span>${liveText}</span><span>Senast: ${senasteText}</span>`;
+  const senasteText = senasteStatus[groupId] || "";
+  document.getElementById(`summary-${groupId}`).innerHTML = `<span>${liveText}</span><span>Senast: ${senasteText}</span>`;
 }
 
 function skapaBanaHTML(namn, groupId) {
@@ -284,168 +206,96 @@ function skapaBanaHTML(namn, groupId) {
     <div class="row">
       <div class="label">${namn}</div>
       <div class="options">
-        <label><input type="radio" name="${id}" value="godkänd" checked onchange="toggleComment('${id}'); updateSummary('${groupId}')"> Fullt godkänd</label>
-        <label><input type="radio" name="${id}" value="anmärkning" onchange="toggleComment('${id}'); updateSummary('${groupId}')"> Anmärkning</label>
-        <label><input type="radio" name="${id}" value="avstängd" onchange="toggleComment('${id}'); updateSummary('${groupId}')"> Avstängd</label>
+        <label><input type="radio" name="${id}_status" value="godkänd" checked onchange="toggleComment('${id}'); updateSummary('${groupId}')"> Fullt godkänd</label>
+        <label><input type="radio" name="${id}_status" value="anmärkning" onchange="toggleComment('${id}'); updateSummary('${groupId}')"> Anmärkning</label>
+        <label><input type="radio" name="${id}_status" value="avstängd" onchange="toggleComment('${id}'); updateSummary('${groupId}')"> Avstängd</label>
       </div>
     </div>
     <div class="comment" id="comment-${id}">
-      <textarea name="kommentar_${id}" placeholder="Kommentar om något är fel..."></textarea>
+      <textarea name="${id}_kommentar" placeholder="Kommentar om något är fel..."></textarea>
     </div>`;
 }
 
 async function visaSenasteStatus() {
   const res = await fetch(SHEETDB_API);
   const data = await res.json();
-  const senaste = data[data.length - 1];
+  const senaste = [...data].sort((a, b) => new Date(b.datum) - new Date(a.datum))[0];
+  if (!senaste) return;
 
-  for (const key in senaste) {
+  Object.keys(senaste).forEach(key => {
     if (key.endsWith("_status")) {
       const id = key.replace("_status", "");
       const status = senaste[key];
-      senasteStatus[getGroupId(id)] ||= "";
-      if (status === "godkänd" || status === "Fullt godkänd") senasteStatus[getGroupId(id)] += "✔️ ";
-      else if (status === "anmärkning") senasteStatus[getGroupId(id)] += "⚠️ ";
-      else if (status === "avstängd") senasteStatus[getGroupId(id)] += "⛔ ";
-
-      const container = document.querySelector(`[name='${id}']`)?.closest(".options");
-      if (container) {
-        const div = document.createElement("div");
-        div.className = `senaste-status ${status === "godkänd" ? "green" : status === "anmärkning" ? "yellow" : "red"}`;
-        div.innerText = `Senaste rapport: ${status}`;
-        container.parentElement.appendChild(div);
-      }
+      const statusDiv = document.createElement("div");
+      statusDiv.className = "senaste-status";
+      if (status === "godkänd") statusDiv.classList.add("green");
+      else if (status === "anmärkning") statusDiv.classList.add("yellow");
+      else if (status === "avstängd") statusDiv.classList.add("red");
+      statusDiv.innerText = `Senaste rapport: ${status}`;
+      const container = document.querySelector(`[name='${id}_status']`)?.closest(".options");
+      if (container) container.parentElement.appendChild(statusDiv);
     }
+  });
 
-    if (key.endsWith("_kommentar")) {
-      const id = key.replace("_kommentar", "");
-      senasteKommentarer[id] = senaste[key];
-    }
+  for (const [groupId, banor] of Object.entries(grupper)) {
+    let g = 0, a = 0, av = 0;
+    banor.forEach(namn => {
+      const id = toId(namn);
+      const status = senaste[`${id}_status`];
+      if (status === "godkänd") g++;
+      else if (status === "anmärkning") a++;
+      else if (status === "avstängd") av++;
+    });
+    senasteStatus[groupId] = `${g} godkända, ${a} anmärkning, ${av} avstängd`;
+    updateSummary(groupId);
   }
 
-  Object.keys(grupper).forEach(updateSummary);
-
-  if (senaste?.datum) {
+  if (senaste.datum) {
     document.getElementById("senaste-datum").innerText = `Senaste rapport: ${senaste.datum}`;
   }
 }
 
-function getGroupId(banaId) {
-  return Object.entries(grupper).find(([k, v]) => v.map(toId).includes(banaId))?.[0];
-}
-
-function skickaForm(e) {
-  e.preventDefault();
-  document.getElementById("kontroll-form").requestSubmit();
-}
-
-async function hamtaPersonalLista() {
-  const res = await fetch(PERSONAL_API);
-  const data = await res.json();
-  const div = document.getElementById("personal-list");
-  div.innerHTML = "";
-  data.forEach(p => {
-    const id = `personal_${p.namn.replace(/\s+/g, "_")}`;
-    div.innerHTML += `<label style="display:block;"><input type="checkbox" name="personal" value="${p.namn}" id="${id}"> ${p.namn}</label>`;
-  });
-}
-
-document.getElementById("open-personal-popup").addEventListener("click", () => {
-  document.getElementById("personal-popup").style.display = "block";
-  hamtaPersonalLista();
-});
-
-document.getElementById("kopiera-senaste").addEventListener("click", async () => {
-  const res = await fetch(SHEETDB_API);
-  const data = await res.json();
-  const senaste = data[data.length - 1];
-
-  Object.entries(senaste).forEach(([key, value]) => {
-    if (key.endsWith("_status")) {
-      const id = key.replace("_status", "");
-      const radios = document.getElementsByName(id);
-      radios.forEach(r => r.checked = r.value === value);
-    }
-    if (key.endsWith("_kommentar")) {
-      const id = key.replace("_kommentar", "");
-      const comment = document.querySelector(`[name="kommentar_${id}"]`);
-      if (comment) {
-        comment.value = value;
-        document.getElementById(`comment-${id}`).style.display = "flex";
-      }
-    }
-  });
-
-  Object.keys(grupper).forEach(updateSummary);
-  document.getElementById("statusmeddelande").innerText = "Senaste rapport kopierad!";
-});
-
-document.getElementById("kontroll-form").addEventListener("submit", async function(e) {
-  e.preventDefault();
-
-  const formData = new FormData(this);
-  const statusData = {};
-  const kommentarData = {};
-  for (let [key, val] of formData.entries()) {
-    if (key.startsWith("kommentar_")) kommentarData[key.replace("kommentar_", "")] = val;
-    else statusData[key] = val;
-  }
-
-  const valdaPersonal = Array.from(document.querySelectorAll("input[name='personal']:checked"))
-    .map(cb => cb.value)
-    .join(", ");
-  if (!valdaPersonal) return alert("Välj minst en person.");
-
-  const payload = {
-    datum: new Date().toLocaleDateString("sv-SE"),
-    personal: valdaPersonal,
-  };
-
-  Object.entries(statusData).forEach(([bana, status]) => {
-    payload[`${bana}_status`] = status;
-  });
-  Object.entries(kommentarData).forEach(([bana, kommentar]) => {
-    payload[`${bana}_kommentar`] = kommentar;
-  });
-
-  await fetch(SHEETDB_API, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ data: [payload] })
-  });
-
-  this.reset();
-  document.querySelectorAll(".comment").forEach(c => c.style.display = "none");
-  document.getElementById("statusmeddelande").innerText = "Formuläret har skickats!";
-  document.getElementById("personal-popup").style.display = "none";
-});
-
 document.addEventListener("DOMContentLoaded", () => {
   const sektioner = document.getElementById("sektioner");
-
   for (const [groupId, lista] of Object.entries(grupper)) {
-    const sektion = document.createElement("div");
-    sektion.className = "section";
-
-    const alwaysOpen = groupId === "langa_linbanan" ? ' always-open' : '';
-    sektion.innerHTML = `
-      <div class="section-header">
-        <div>${groupId.replace("_", " ").replace("banor", "Banor").replace(/(^|\\s)\\S/g, l => l.toUpperCase())}</div>
+    const section = document.createElement("div");
+    section.className = "section";
+    section.innerHTML = `
+      <div class="section-header" ${groupId === "langa_linbanan" ? "" : 'onclick="toggleSection(this)"'}>
+        <div>${groupId.replace("_", " ").replace("banor", "Banor").replace(/(^|\s)\S/g, l => l.toUpperCase())}</div>
         <div class="section-summary" id="summary-${groupId}"></div>
       </div>
-      <div class="section-content${alwaysOpen}" id="content-${groupId}"></div>
-    `;
-
-    sektioner.appendChild(sektion);
-    const container = sektion.querySelector(`#content-${groupId}`);
-    lista.forEach(namn => {
-      container.insertAdjacentHTML("beforeend", skapaBanaHTML(namn, groupId));
-    });
-
+      <div class="section-content" id="content-${groupId}" style="${groupId === 'langa_linbanan' ? 'display:block' : ''}"></div>`;
+    sektioner.appendChild(section);
+    const container = section.querySelector(`#content-${groupId}`);
+    lista.forEach(namn => container.insertAdjacentHTML("beforeend", skapaBanaHTML(namn, groupId)));
     updateSummary(groupId);
   }
 
   visaSenasteStatus();
+});
+
+document.getElementById("kontroll-form").addEventListener("submit", async function(e) {
+  e.preventDefault();
+  const formData = new FormData(this);
+  const data = { datum: new Date().toLocaleDateString("sv-SE") };
+  for (let [key, value] of formData.entries()) {
+    data[key] = value;
+  }
+
+  try {
+    await fetch(SHEETDB_API, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ data: [data] })
+    });
+    this.reset();
+    document.querySelectorAll(".comment").forEach(el => el.style.display = "none");
+    document.getElementById("statusmeddelande").innerText = "Formuläret har skickats!";
+  } catch (err) {
+    console.error("Fel vid skickning:", err);
+    document.getElementById("statusmeddelande").innerText = "Något gick fel vid skickning.";
+  }
 });
 </script>
 
