@@ -23,21 +23,20 @@
       position: relative;
     }
 
-    .header {
-      text-align: center;
+    .rapport-header {
+      display: flex;
+      align-items: center;
       margin-bottom: 2rem;
     }
 
-    .header img {
-      width: 60px;
-      vertical-align: middle;
+    .rapport-header img {
+      height: 60px;
       margin-right: 1rem;
     }
 
-    .header h1 {
-      display: inline-block;
-      vertical-align: middle;
+    .rapport-header h1 {
       margin: 0;
+      font-size: 2rem;
     }
 
     label {
@@ -58,12 +57,14 @@
       border-radius: 4px;
       box-sizing: border-box;
       font-family: inherit;
+      background-color: white;
     }
 
     textarea {
       resize: vertical;
       min-height: 100px;
       white-space: pre-wrap;
+      overflow-wrap: break-word;
     }
 
     .button-row {
@@ -87,44 +88,24 @@
       background-color: #000;
       color: #fff;
     }
-
-    /* För utskriftsklon */
-    .hidden-clone {
-      display: none;
-      white-space: pre-wrap;
-      word-wrap: break-word;
-    }
-
-    .clone-label {
-      font-weight: bold;
-      margin-top: 1rem;
-    }
-
-    .clone-block {
-      margin-top: 0.2rem;
-      padding: 0.6rem;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      background: #fefefe;
-    }
   </style>
 </head>
 <body>
 
   <div class="container" id="rapport">
-    <div class="header">
-      <img src="logga.png" alt="Logga">
+    <div class="rapport-header">
+      <img src="logga.png" alt="Logotyp" />
       <h1>Incidentrapport</h1>
     </div>
 
     <label for="typ">Typ av incident:</label>
-    <select id="typ">
+    <select id="typ" name="typ">
       <option>Gäst</option>
       <option>Personal</option>
     </select>
 
     <label for="datum">Datum:</label>
-    <input type="date" id="datum" />
+    <input type="date" id="datum" name="datum" />
 
     <label for="vem">Vem:</label>
     <input type="text" id="vem" placeholder="Kvinna 28 år / Andreas, Man 26 år">
@@ -149,46 +130,34 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script>
-    // Fyll i dagens datum som förval
     document.addEventListener("DOMContentLoaded", () => {
       const idag = new Date().toISOString().split("T")[0];
       document.getElementById("datum").value = idag;
     });
 
     function sparaSomPNG() {
-      const container = document.getElementById("rapport");
       const knappar = document.getElementById("knappar");
-
-      // Skapa klon med värden ifyllda som text
-      const clone = container.cloneNode(true);
-      clone.id = "rapport-klon";
-      clone.classList.add("hidden-clone");
-
-      clone.querySelectorAll("input, select, textarea").forEach(elem => {
-        const label = elem.previousElementSibling ? elem.previousElementSibling.textContent : '';
-        const div = document.createElement("div");
-        div.className = "clone-block";
-        div.innerHTML = `<div class="clone-label">${label}</div><div>${elem.value || elem.innerText}</div>`;
-        elem.replaceWith(div);
-      });
-
-      document.body.appendChild(clone);
-
       knappar.style.display = "none";
 
-      html2canvas(clone).then(canvas => {
-        const link = document.createElement("a");
-        link.download = `incidentrapport_${new Date().toLocaleDateString("sv-SE")}.png`;
-        link.href = canvas.toDataURL("image/png");
-        link.click();
-        knappar.style.display = "block";
-        document.body.removeChild(clone);
-      });
+      // Vänta ett ögonblick innan canvas skapas
+      setTimeout(() => {
+        html2canvas(document.getElementById("rapport"), {
+          useCORS: true,
+          scale: 2
+        }).then(canvas => {
+          const link = document.createElement("a");
+          link.download = `incidentrapport_${new Date().toLocaleDateString("sv-SE")}.png`;
+          link.href = canvas.toDataURL("image/png");
+          link.click();
+          knappar.style.display = "block";
+        });
+      }, 100); // ger tid för knappar att döljas ordentligt
     }
 
     function skickaRapport() {
       alert("Funktion för att skicka via mail kommer senare.");
     }
   </script>
+
 </body>
 </html>
