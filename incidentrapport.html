@@ -20,6 +20,7 @@
       padding: 2rem;
       border-radius: 10px;
       box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      position: relative;
     }
 
     .header {
@@ -29,15 +30,13 @@
     }
 
     .header img {
-      max-height: 60px;
+      height: 60px;
       margin-right: 1rem;
     }
 
     .header h1 {
-      flex: 1;
-      text-align: center;
-      margin: 0;
-      font-size: 2rem;
+      margin: 0 auto;
+      font-size: 1.8rem;
     }
 
     label {
@@ -58,13 +57,13 @@
       border-radius: 4px;
       box-sizing: border-box;
       font-family: inherit;
-      white-space: pre-wrap; /* viktig för PNG-radbrytning */
     }
 
     textarea {
       resize: vertical;
       min-height: 100px;
       white-space: pre-wrap;
+      overflow-wrap: break-word;
     }
 
     .button-row {
@@ -88,24 +87,36 @@
       background-color: #000;
       color: #fff;
     }
+
+    .print-textarea {
+      white-space: pre-wrap;
+      word-break: break-word;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      padding: 0.6rem;
+      font-size: 1rem;
+      min-height: 100px;
+      font-family: inherit;
+      margin-top: 0.3rem;
+    }
   </style>
 </head>
 <body>
 
   <div class="container" id="rapport">
     <div class="header">
-      <img src="logga.png" alt="Logga">
+      <img src="logga.png" alt="Logotyp">
       <h1>Incidentrapport</h1>
     </div>
 
     <label for="typ">Typ av incident:</label>
-    <select id="typ" name="typ">
+    <select id="typ">
       <option>Gäst</option>
       <option>Personal</option>
     </select>
 
     <label for="datum">Datum:</label>
-    <input type="date" id="datum" name="datum" />
+    <input type="date" id="datum" />
 
     <label for="vem">Vem:</label>
     <input type="text" id="vem" placeholder="Kvinna 28 år / Andreas, Man 26 år">
@@ -130,7 +141,6 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script>
-    // Sätt dagens datum som standard
     document.addEventListener("DOMContentLoaded", () => {
       const idag = new Date().toISOString().split("T")[0];
       document.getElementById("datum").value = idag;
@@ -138,19 +148,37 @@
 
     function sparaSomPNG() {
       const knappar = document.getElementById("knappar");
-      knappar.style.display = "none"; // Dölj knappar
+      const rapport = document.getElementById("rapport");
 
-      html2canvas(document.getElementById("rapport"), {
-        scale: 2,
-        useCORS: true,
-        backgroundColor: "#ffffff",
-        allowTaint: true
-      }).then(canvas => {
+      // Temporär konvertering av textarea till div
+      const textareas = rapport.querySelectorAll("textarea");
+      const tempDivs = [];
+
+      textareas.forEach(textarea => {
+        const div = document.createElement("div");
+        div.className = "print-textarea";
+        div.innerText = textarea.value;
+        div.style.width = textarea.offsetWidth + "px";
+        div.style.minHeight = textarea.offsetHeight + "px";
+        textarea.style.display = "none";
+        textarea.parentElement.insertBefore(div, textarea);
+        tempDivs.push({ textarea, div });
+      });
+
+      knappar.style.display = "none";
+
+      html2canvas(rapport).then(canvas => {
         const link = document.createElement("a");
         link.download = `incidentrapport_${new Date().toLocaleDateString("sv-SE")}.png`;
         link.href = canvas.toDataURL("image/png");
         link.click();
-        knappar.style.display = "block"; // Visa igen
+
+        // Återställ
+        tempDivs.forEach(({ textarea, div }) => {
+          div.remove();
+          textarea.style.display = "block";
+        });
+        knappar.style.display = "block";
       });
     }
 
@@ -158,6 +186,5 @@
       alert("Funktion för att skicka via mail kommer senare.");
     }
   </script>
-
 </body>
 </html>
