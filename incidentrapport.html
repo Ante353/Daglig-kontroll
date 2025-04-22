@@ -20,6 +20,12 @@
       padding: 2rem;
       border-radius: 10px;
       box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      position: relative;
+    }
+
+    .logo {
+      max-width: 120px;
+      margin-bottom: 1rem;
     }
 
     h1 {
@@ -50,7 +56,6 @@
     textarea {
       resize: vertical;
       min-height: 100px;
-      overflow-wrap: break-word;
       white-space: pre-wrap;
     }
 
@@ -75,27 +80,12 @@
       background-color: #000;
       color: #fff;
     }
-
-    .hidden-clone {
-      position: absolute;
-      top: -9999px;
-      left: -9999px;
-      visibility: hidden;
-    }
-
-    .output-text {
-      white-space: pre-wrap;
-      word-wrap: break-word;
-      border: 1px solid #ccc;
-      padding: 0.6rem;
-      border-radius: 4px;
-      min-height: 100px;
-    }
   </style>
 </head>
 <body>
 
   <div class="container" id="rapport">
+    <img src="logga.png" alt="Logotyp" class="logo" />
     <h1>Incidentrapport</h1>
 
     <label for="typ">Typ av incident:</label>
@@ -139,32 +129,20 @@
       const knappar = document.getElementById("knappar");
       knappar.style.display = "none";
 
-      const rapport = document.getElementById("rapport");
+      const rapportElement = document.getElementById("rapport");
 
-      // Skapa en klon av rapporten där vi byter ut textareas mot divar
-      const clone = rapport.cloneNode(true);
-      clone.id = "rapport-klon";
-      clone.classList.add("hidden-clone");
-
-      // Ersätt varje <textarea> med motsvarande <div> med textinnehåll
-      const textareas = rapport.querySelectorAll("textarea");
-      const cloneTextareas = clone.querySelectorAll("textarea");
-
-      textareas.forEach((ta, i) => {
-        const div = document.createElement("div");
-        div.className = "output-text";
-        div.innerText = ta.value || "";
-        cloneTextareas[i].parentNode.replaceChild(div, cloneTextareas[i]);
-      });
-
-      document.body.appendChild(clone);
-
-      html2canvas(clone).then(canvas => {
+      html2canvas(rapportElement, {
+        useCORS: true,
+        scale: 2,
+        windowWidth: document.body.scrollWidth
+      }).then(canvas => {
         const link = document.createElement("a");
         link.download = `incidentrapport_${new Date().toLocaleDateString("sv-SE")}.png`;
         link.href = canvas.toDataURL("image/png");
         link.click();
-        document.body.removeChild(clone);
+        knappar.style.display = "block";
+      }).catch(err => {
+        alert("Fel vid export: " + err);
         knappar.style.display = "block";
       });
     }
