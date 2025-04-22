@@ -148,8 +148,22 @@
 
     .senaste-status {
       font-size: 0.9em;
-      color: #555;
       margin-top: 0.3rem;
+    }
+
+    .status-godkänd {
+      color: green;
+      font-weight: bold;
+    }
+
+    .status-anmärkning {
+      color: goldenrod;
+      font-weight: bold;
+    }
+
+    .status-avstängd {
+      color: red;
+      font-weight: bold;
     }
 
     #personal-popup {
@@ -309,7 +323,12 @@ async function visaSenasteStatus() {
     if (container) {
       const statusDiv = document.createElement("div");
       statusDiv.className = "senaste-status";
-      statusDiv.innerText = `Senaste rapport: ${status}`;
+      let klass = "";
+      if (status?.toLowerCase().includes("godk")) klass = "status-godkänd";
+      else if (status?.toLowerCase().includes("anmärk")) klass = "status-anmärkning";
+      else if (status?.toLowerCase().includes("avstäng")) klass = "status-avstängd";
+
+      statusDiv.innerHTML = `Senaste rapport: <span class="${klass}">${status}</span>`;
       container.parentElement.appendChild(statusDiv);
     }
   }
